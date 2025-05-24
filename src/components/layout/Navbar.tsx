@@ -83,7 +83,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
-        <Link href="/courses" className="flex items-center space-x-2">
+        <Link href="/courses" className="flex items-center space-x-2 rtl:space-x-reverse">
           <Image src="/coursehub-logo.png" alt="CourseHub Logo" width={40} height={40} className="rounded-md" />
           <span className="text-xl font-bold text-primary">CourseHub</span>
         </Link>
@@ -137,7 +137,7 @@ export default function Navbar() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[240px] bg-card p-4">
-                <div className="mb-4 flex items-center space-x-2">
+                <div className="mb-4 flex items-center space-x-2 rtl:space-x-reverse">
                    <Image src="/coursehub-logo.png" alt="CourseHub Logo" width={32} height={32} className="rounded-md" />
                    <span className="text-lg font-bold text-primary">CourseHub</span>
                 </div>

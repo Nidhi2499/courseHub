@@ -12,6 +12,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "CourseHub",
   description: "Your personalized learning platform.",
+  icons: {
+    icon: '/assets/course icon.webp',
+
+  }
 };
 
 export default function RootLayout({
