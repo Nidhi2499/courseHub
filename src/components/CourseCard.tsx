@@ -54,7 +54,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button onClick={handleEnroll} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button onClick={handleEnroll} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
           Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardFooter>
