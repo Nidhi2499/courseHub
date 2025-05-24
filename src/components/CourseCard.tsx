@@ -1,6 +1,7 @@
+
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from "next/link";
 import { useEnrolledCourses } from '@/contexts/EnrolledCoursesContext';
@@ -16,23 +17,37 @@ interface CourseCardProps {
 
 export default function CourseCard({ course }: CourseCardProps) {
   const { enrolledCourses, enrollCourse } = useEnrolledCourses();
+  const [currentImageSrc, setCurrentImageSrc] = useState(course.imageUrl);
+
+  useEffect(() => {
+    // Update currentImageSrc if the course prop changes,
+    // effectively resetting any fallback that might have been triggered.
+    setCurrentImageSrc(course.imageUrl);
+  }, [course.imageUrl]);
 
   const handleEnroll = () => {
     enrollCourse(course.id);
   };
 
+  const handleImageError = () => {
+    console.warn(`Failed to load image: ${course.imageUrl}. Falling back to default placeholder for course "${course.title}".`);
+    setCurrentImageSrc(`https://placehold.co/600x400.png?text=Image+Not+Available`);
+  };
+
   return (
     <Card className="flex h-full w-full flex-col overflow-hidden transition-all hover:shadow-xl">
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full">
+        <div className="relative h-48 w-full group"> {/* Added group for potential hover effects on image if needed */}
           <Link href={`/courses/${course.id}`} passHref>
             <Image
-              src={course.imageUrl}
+              src={currentImageSrc}
               alt={course.title}
-              layout="fill"
-              objectFit="cover"
+              fill={true}
+              className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
               data-ai-hint={course.dataAiHint}
-              className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+              onError={handleImageError}
+              // Add unoptimized prop if the fallback image URL itself could cause issues with optimizer
+              unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
             />
           </Link>
         </div>
