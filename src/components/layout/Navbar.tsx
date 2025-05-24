@@ -84,7 +84,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <Link href="/courses" className="flex items-center space-x-2">
-          <Image src="https://placehold.co/40x40.png" alt="CourseHub Logo" width={40} height={40} className="rounded-md" data-ai-hint="books pens" />
+          <Image src="/coursehub-logo.png" alt="CourseHub Logo" width={40} height={40} className="rounded-md" />
           <span className="text-xl font-bold text-primary">CourseHub</span>
         </Link>
 
@@ -138,7 +138,7 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-[240px] bg-card p-4">
                 <div className="mb-4 flex items-center space-x-2">
-                   <Image src="https://placehold.co/32x32.png" alt="CourseHub Logo" width={32} height={32} className="rounded-md" data-ai-hint="books pens" />
+                   <Image src="/coursehub-logo.png" alt="CourseHub Logo" width={32} height={32} className="rounded-md" />
                    <span className="text-lg font-bold text-primary">CourseHub</span>
                 </div>
                 <nav className="flex flex-col space-y-2">
