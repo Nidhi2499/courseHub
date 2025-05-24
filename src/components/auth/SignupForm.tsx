@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -120,9 +121,16 @@ export default function SignupForm() {
                     </Button>
                   </div>
                 <FormMessage />
-                <p className="text-xs text-muted-foreground pt-1">
-                  Must be 8+ chars, start with letter or _, include uppercase, lowercase, number, and special char (@$!%*?&amp;_#-).
-                </p>
+                <div className="pt-1 text-xs text-muted-foreground">
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Must be 8+ characters long.</li>
+                    <li>Must start with a letter or underscore (_).</li>
+                    <li>Must include at least one uppercase letter.</li>
+                    <li>Must include at least one lowercase letter.</li>
+                    <li>Must include at least one number.</li>
+                    <li>Must include at least one special character (e.g., @$!%*?&_#-\).</li>
+                  </ul>
+                </div>
               </FormItem>
             )}
           />
