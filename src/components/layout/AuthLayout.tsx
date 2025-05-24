@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         priority
       />
       <div className="mb-8 flex justify-center items-center">
-        <h1 className="text-4xl font-serif font-bold text-[#FFB6C1]">CourseHub</h1>
+        <h1 className="text-4xl font-serif font-bold text-black">CourseHub</h1>
       </div>
       <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl sm:p-8">
         {children}
