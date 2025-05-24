@@ -17,7 +17,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="mb-8 flex justify-center items-center">
         <h1 className="text-4xl font-serif font-bold text-primary">CourseHub</h1>
       </div>
-      <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl sm:p-8">
+      <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl sm:p-8 overflow-y-auto max-h-[85vh]">
         {children}
       </div>
       <p className="mt-8 text-center text-sm text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
