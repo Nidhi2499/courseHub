@@ -14,14 +14,13 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         className="-z-10"
         priority
       />
-      <div className="mb-8 flex items-center space-x-3">
-        <Image src="https://placehold.co/64x64.png" alt="CourseHub Logo" width={64} height={64} className="rounded-lg" data-ai-hint="books pens" />
+      <div className="mb-8 flex justify-center items-center">
         <h1 className="text-4xl font-bold text-primary">CourseHub</h1>
       </div>
       <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-xl sm:p-8">
         {children}
       </div>
-      <p className="mt-8 text-center text-sm text-white drop-shadow-sm">
+      <p className="mt-8 text-center text-sm text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
         Your journey to knowledge starts here.
       </p>
     </div>
