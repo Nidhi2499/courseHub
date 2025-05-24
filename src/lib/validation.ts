@@ -34,3 +34,14 @@ export const courseRecommendationSchema = z.object({
   interests: z.string().min(3, "Please describe your interests."),
   learningHistory: z.string().optional(),
 });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required."),
+    newPassword: passwordValidation,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "New passwords do not match.",
+    path: ["confirmNewPassword"],
+  });
