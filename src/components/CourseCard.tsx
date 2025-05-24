@@ -1,43 +1,40 @@
 "use client";
 
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
+import Link from "next/link";
+import { useEnrolledCourses } from '@/contexts/EnrolledCoursesContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-export interface Course {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  imageUrl: string;
-  dataAiHint: string;
-  duration: string;
-  level: "Beginner" | "Intermediate" | "Advanced";
-}
+import { ArrowRight } from "lucide-react";
+import type { Course } from "@/types/course"; // Use shared type
 
 interface CourseCardProps {
   course: Course;
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
+  const { enrolledCourses, enrollCourse } = useEnrolledCourses();
+
   const handleEnroll = () => {
-    // Placeholder for enroll functionality
-    alert(`Enrolling in ${course.title}`);
+    enrollCourse(course.id);
   };
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden transition-all hover:shadow-xl">
+    <Card className="flex h-full w-full flex-col overflow-hidden transition-all hover:shadow-xl">
       <CardHeader className="p-0">
         <div className="relative h-48 w-full">
-          <Image
-            src={course.imageUrl}
-            alt={course.title}
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint={course.dataAiHint}
-          />
+          <Link href={`/courses/${course.id}`} passHref>
+            <Image
+              src={course.imageUrl}
+              alt={course.title}
+              layout="fill"
+              objectFit="cover"
+              data-ai-hint={course.dataAiHint}
+              className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+            />
+          </Link>
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-4 pt-4">
@@ -53,9 +50,15 @@ export default function CourseCard({ course }: CourseCardProps) {
           Duration: {course.duration}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button onClick={handleEnroll} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-          Enroll Now <ArrowRight className="ml-2 h-4 w-4" />
+      <CardFooter className="p-4 pt-0 flex items-center justify-between">
+        <Button 
+          onClick={handleEnroll} 
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+          disabled={enrolledCourses.includes(course.id)} 
+          suppressHydrationWarning
+        >
+          {enrolledCourses.includes(course.id) ? 'Enrolled!' : 'Enroll Now'}
+          {!enrolledCourses.includes(course.id) && <ArrowRight className="ml-2 h-4 w-4" />}
         </Button>
       </CardFooter>
     </Card>

@@ -1,97 +1,37 @@
-
 "use client";
 
-import CourseCard, { type Course } from "@/components/CourseCard";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import CourseCard from "@/components/CourseCard";
+import type { Course } from "@/types/course"; // Use shared type
+import { getCourses } from "@/services/courseService";
 import { useSearchParams } from "next/navigation";
-
-// Dummy course data (replace with your actual data fetching logic)
-const courses: Course[] = [
-  {
-    id: "1",
-    title: "Introduction to Web Development",
-    description: "Learn the fundamentals of HTML, CSS, and JavaScript to build modern websites.",
-    category: "Web Development",
-    imageUrl: "/assets/web-devlopment.jpeg",
-    dataAiHint: "web code",
-    duration: "8 Weeks",
-    level: "Beginner",
-  },
-  {
-    id: "2",
-    title: "Advanced Python Programming",
-    description: "Dive deep into Python concepts, data structures, and algorithms.",
-    category: "Programming",
-    imageUrl: "/assets/python-programming.jpeg",
-    dataAiHint: "python algorithm",
-    duration: "12 Weeks",
-    level: "Advanced",
-  },
-  {
-    id: "3",
-    title: "Data Science with R",
-    description: "Explore data analysis, visualization, and machine learning techniques using R.",
-    category: "Data Science",
-    imageUrl: "/assets/data-science.jpeg",
-    dataAiHint: "data analysis",
-    duration: "10 Weeks",
-    level: "Intermediate",
-  },
-  {
-    id: "4",
-    title: "Digital Marketing Fundamentals",
-    description: "Understand SEO, SEM, social media marketing, and content strategy.",
-    category: "Marketing",
-    imageUrl: "/assets/digital-marketing.jpeg",
-    dataAiHint: "marketing analytics",
-    duration: "6 Weeks",
-    level: "Beginner",
-  },
-   {
-    id: "5",
-    title: "UI/UX Design Principles",
-    description: "Master the core principles of user interface and user experience design.",
-    category: "Design",
-    imageUrl: "/assets/ui-ux.png",
-    dataAiHint: "ux wireframe",
-    duration: "8 Weeks",
-    level: "Intermediate",
-  },
-  {
-    id: "6",
-    title: "Cloud Computing with AWS",
-    description: "Learn to deploy and manage applications on Amazon Web Services.",
-    category: "Cloud Computing",
-    imageUrl: "/assets/cloud-computing.jpeg",
-    dataAiHint: "aws architecture",
-    duration: "10 Weeks",
-    level: "Intermediate",
-  },
-  {
-    id: "7",
-    title: "Java Programming",
-    description: "Learn the fundamentals of Java programming language.",
-    category: "Programming",
-    imageUrl: "/assets/java-programming.jpeg",
-    dataAiHint: "java code",
-    duration: "10 Weeks",
-    level: "Beginner",
-  },
-  {
-    id: "8",
-    title: "n8n Automation",
-    description: "Learn to automate workflows with n8n.",
-    category: "Automation",
-    imageUrl: "/assets/n8n.png",
-    dataAiHint: "n8n workflow automation",
-    level: "Intermediate",
-  },
-];
+import { Loader2, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function CoursesPage() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search");
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchCourses() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const fetchedCourses = await getCourses();
+        setCourses(fetchedCourses);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+        setError("Failed to load courses. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCourses();
+  }, []);
 
   const filteredCourses = searchQuery
     ? courses.filter((course) =>
@@ -99,9 +39,42 @@ export default function CoursesPage() {
       )
     : courses;
 
+  if (isLoading) {
+    return (
+      <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center px-4 py-8">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Loading courses...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center px-4 py-8">
+        <Alert variant="destructive" className="w-full max-w-md">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error Loading Courses</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+  
+  if (!isLoading && !error && courses.length === 0) {
+    return (
+      <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center px-4 py-8">
+        <Alert className="w-full max-w-md">
+          <AlertTitle>No Courses Available</AlertTitle>
+          <AlertDescription>
+            There are currently no courses available. Please check back later.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
-
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-primary">
           Explore Our Courses
@@ -111,11 +84,18 @@ export default function CoursesPage() {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        {filteredCourses.map((course) => (
-          <CourseCard key={course.id} course={course} />
-        ))}
-      </div>
+      {filteredCourses.length === 0 && searchQuery ? (
+        <div className="text-center py-10">
+          <p className="text-xl text-muted-foreground">No courses found matching &quot;{searchQuery}&quot;.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Try a different search term or browse all courses.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+          {filteredCourses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

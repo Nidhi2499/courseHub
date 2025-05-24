@@ -107,7 +107,7 @@ export default function Navbar() {
   };
 
   const navItems = [
-    { href: "/courses", label: "MyCourses", icon: BookOpen },
+    { href: "/my-courses", label: "My Courses", icon: BookOpen },
   ];
 
   const UserAvatar = () => (

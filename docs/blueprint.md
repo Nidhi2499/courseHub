@@ -9,6 +9,11 @@
 - Course Listing: Display a list of available courses after successful login and a enroll button below every course to the left of it.
 - Personalized Recommendations: Use a generative AI tool to provide personalized course recommendations.
 
+- My Courses Page: A dedicated page to display courses the user has enrolled in.
+- Course Enrollment: Users can enroll in a course by clicking the "Enroll Now" button on the Course Card.
+- Enroll Button State: The "Enroll Now" button text changes to "Enrolled!" after successful enrollment.
+- Image Click Navigation: Clicking the course image on the Course Card navigates to the /courses page with the course ID as a query parameter.
+- Card Content Click Navigation: Clicking the Course Card content (excluding the image and enroll button) navigates to a dynamic page displaying detailed information for that course (/courses/[courseId]).
 ## Style Guidelines:
 
 - Primary color: Deep indigo (#3F51B5) for a sense of professionalism and trust.
