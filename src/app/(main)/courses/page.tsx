@@ -1,9 +1,12 @@
 
+"use client";
+
 import CourseCard, { type Course } from "@/components/CourseCard";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
-// Dummy course data
+// Dummy course data (replace with your actual data fetching logic)
 const courses: Course[] = [
   {
     id: "1",
@@ -86,11 +89,19 @@ const courses: Course[] = [
   },
 ];
 
-
-// Server component for now, can be client if search/filter is client-side
 export default function CoursesPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search");
+
+  const filteredCourses = searchQuery
+    ? courses.filter((course) =>
+        course.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : courses;
+
   return (
     <div className="container mx-auto px-4 py-8">
+
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-primary">
           Explore Our Courses
@@ -100,18 +111,8 @@ export default function CoursesPage() {
         </p>
       </div>
       
-      {/* Search bar - functionality to be implemented if needed */}
-      {/* <div className="mb-8 relative">
-        <Input
-          type="search"
-          placeholder="Search for courses..."
-          className="pl-10 h-12 text-base bg-card"
-        />
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-      </div> */}
-
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        {courses.map((course) => (
+        {filteredCourses.map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}
       </div>
