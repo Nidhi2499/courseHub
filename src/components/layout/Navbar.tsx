@@ -2,7 +2,7 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-import { BookOpen, LogOut, Menu, UserCircle, Search } from "lucide-react";
+import { BookOpen, LogOut, Menu, UserCircle, Search, KeyRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -77,6 +77,10 @@ export default function Navbar() {
       console.error("Logout error:", error);
       toast({ title: "Logout Failed", description: "Could not log you out. Please try again.", variant: "destructive" });
     }
+  };
+
+  const handleChangePassword = () => {
+    router.push('/profile/change-password');
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,6 +208,10 @@ export default function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleChangePassword} className="cursor-pointer">
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    <span>Change Password</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
@@ -289,7 +297,11 @@ export default function Navbar() {
                           </p>
                         </div>
                      </div>
-                    <Button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full text-destructive justify-start" variant="ghost">
+                    <DropdownMenuItem onClick={() => { handleChangePassword(); setMobileMenuOpen(false); }} className="cursor-pointer">
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      <span>Change Password</span>
+                    </DropdownMenuItem>
+                    <Button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full text-destructive justify-start mt-1" variant="ghost">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
                     </Button>
@@ -310,3 +322,4 @@ export default function Navbar() {
     </>
   );
 }
+
