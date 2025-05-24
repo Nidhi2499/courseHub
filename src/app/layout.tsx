@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "CourseHub",
   description: "Your personalized learning platform.",
   icons: {
-    icon: '/assets/course icon.webp',
+    icon: '/assets/course-icon.png',
 
   }
 };

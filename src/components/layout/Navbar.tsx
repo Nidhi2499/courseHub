@@ -297,13 +297,29 @@ export default function Navbar() {
                           </p>
                         </div>
                      </div>
-                    <DropdownMenuItem onClick={() => { handleChangePassword(); setMobileMenuOpen(false); }} className="cursor-pointer">
+                    {/* Replace DropdownMenuItem with div for mobile */}
+                    <div
+                      onClick={() => { handleChangePassword(); setMobileMenuOpen(false); }}
+                      className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
                       <KeyRound className="mr-2 h-4 w-4" />
                       <span>Change Password</span>
-                    </DropdownMenuItem>
-                    <Button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full text-destructive justify-start mt-1" variant="ghost">
+                    </div>
+                    {/* Replace Button with div for mobile */}
+                    <div
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                      className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors text-destructive hover:bg-destructive/10 hover:text-destructive mt-1"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
+
+                    </div>
+                  </div>
+                )}
+                {!user && (
+                   <div className="mt-auto border-t pt-4">
+                    <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                      <Link href="/login">Sign In</Link>
                     </Button>
                   </div>
                 )}

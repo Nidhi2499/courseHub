@@ -69,7 +69,7 @@ const MyCoursesPage = () => {
       {enrolledCourses.length === 0 ? (
          <div className="flex flex-col items-center justify-center py-10 text-center">
           <Info className="h-12 w-12 text-primary mb-4" />
-          <p className="text-xl font-semibold text-foreground">You haven&apos;t enrolled in any courses yet.</p>
+          <p className="text-xl font-semibold text-foreground">You haven&apos;t enrolled in any of the courses yet.</p>
           <p className="mt-2 text-muted-foreground">
             Explore our course catalog and find something that sparks your interest!
           </p>

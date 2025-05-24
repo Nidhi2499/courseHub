@@ -38,7 +38,12 @@ export async function getCourses(): Promise<Course[]> {
   const querySnapshot = await getDocs(coursesCollectionRef);
   const coursesList: Course[] = [];
   querySnapshot.forEach((doc) => {
-    coursesList.push({ id: doc.id, ...doc.data() } as Course);
+    const courseData = doc.data();
+    // Prepend /assets/ to the imageUrl
+    if (courseData.imageUrl) {
+      courseData.imageUrl = `/assets/${courseData.imageUrl}`;
+    }
+    coursesList.push({ id: doc.id, ...courseData });
   });
-  return coursesList;
+  return coursesList.sort((a, b) => a.title.localeCompare(b.title));
 }

@@ -30,7 +30,9 @@ export const EnrolledCoursesProvider: React.FC<{ children: ReactNode }> = ({ chi
         try {
           const docSnap = await getDoc(userEnrollmentRef);
           if (docSnap.exists() && docSnap.data().enrolledCourseIds) {
-            setEnrolledCourses(docSnap.data().enrolledCourseIds);
+            const enrolledIds: string[] = docSnap.data().enrolledCourseIds;
+            // Sort enrolled course IDs alphabetically before setting the state
+ setEnrolledCourses(enrolledIds.sort((a, b) => a.localeCompare(b)));
           } else {
             setEnrolledCourses([]);
           }
