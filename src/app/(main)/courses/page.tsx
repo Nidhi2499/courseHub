@@ -1,3 +1,4 @@
+
 import CourseCard, { type Course } from "@/components/CourseCard";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -10,7 +11,7 @@ const courses: Course[] = [
     description: "Learn the fundamentals of HTML, CSS, and JavaScript to build modern websites.",
     category: "Web Development",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "coding programming",
+    dataAiHint: "web code", // Updated
     duration: "8 Weeks",
     level: "Beginner",
   },
@@ -20,7 +21,7 @@ const courses: Course[] = [
     description: "Dive deep into Python concepts, data structures, and algorithms.",
     category: "Programming",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "python snake",
+    dataAiHint: "python algorithm", // Updated
     duration: "12 Weeks",
     level: "Advanced",
   },
@@ -30,7 +31,7 @@ const courses: Course[] = [
     description: "Explore data analysis, visualization, and machine learning techniques using R.",
     category: "Data Science",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "data charts",
+    dataAiHint: "data analysis", // Updated
     duration: "10 Weeks",
     level: "Intermediate",
   },
@@ -40,7 +41,7 @@ const courses: Course[] = [
     description: "Understand SEO, SEM, social media marketing, and content strategy.",
     category: "Marketing",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "marketing strategy",
+    dataAiHint: "marketing analytics", // Updated
     duration: "6 Weeks",
     level: "Beginner",
   },
@@ -50,7 +51,7 @@ const courses: Course[] = [
     description: "Master the core principles of user interface and user experience design.",
     category: "Design",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "design interface",
+    dataAiHint: "ux wireframe", // Updated
     duration: "8 Weeks",
     level: "Intermediate",
   },
@@ -60,7 +61,7 @@ const courses: Course[] = [
     description: "Learn to deploy and manage applications on Amazon Web Services.",
     category: "Cloud Computing",
     imageUrl: "https://placehold.co/600x400.png",
-    dataAiHint: "cloud server",
+    dataAiHint: "aws architecture", // Updated
     duration: "10 Weeks",
     level: "Intermediate",
   },
@@ -98,3 +99,4 @@ export default function CoursesPage() {
     </div>
   );
 }
+
