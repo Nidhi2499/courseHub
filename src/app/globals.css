@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 228 67% 96%; /* #F0F2F9 - Very light indigo */
+    --background: 40 50% 94%; /* Beige */
     --foreground: 230 35% 15%; /* Dark indigo/charcoal for text */
 
     --card: 0 0% 100%; /* White cards to pop */
