@@ -1,31 +1,32 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useEnrolledCourses } from '@/contexts/EnrolledCoursesContext';
 import CourseCard from '@/components/CourseCard';
-import type { Course } from '@/types/course'; // Use shared type
+import type { Course } from '@/types/course';
 import { getCourses } from '@/services/courseService';
 import { Loader2, AlertTriangle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const MyCoursesPage = () => {
-  const { enrolledCourses } = useEnrolledCourses();
+  const { enrolledCourses, isLoadingEnrollments } = useEnrolledCourses();
   const [allCourses, setAllCourses] = useState<Course[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingAllCourses, setIsLoadingAllCourses] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCoursesData() {
       try {
-        setIsLoading(true);
+        setIsLoadingAllCourses(true);
         setError(null);
         const fetchedCourses = await getCourses();
         setAllCourses(fetchedCourses);
       } catch (err) {
         console.error("Failed to fetch courses for My Courses:", err);
-        setError("Failed to load your courses. Please try again later.");
+        setError("Failed to load course catalog. Please try again later.");
       } finally {
-        setIsLoading(false);
+        setIsLoadingAllCourses(false);
       }
     }
     fetchCoursesData();
@@ -35,7 +36,7 @@ const MyCoursesPage = () => {
     enrolledCourses.includes(course.id)
   );
 
-  if (isLoading) {
+  if (isLoadingEnrollments || isLoadingAllCourses) {
     return (
       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center px-4 py-8">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
