@@ -61,9 +61,6 @@ const CourseDetailPage = () => {
   useEffect(() => {
     const videoElement = videoRef.current;
     if (videoElement && selectedVideoUrl) {
-      // When a new video is selected (selectedVideoUrl changes),
-      // ensure it's paused and reset relevant states.
-      // The `key` prop on the <video> element handles re-mounting.
       videoElement.pause();
       setIsPlaying(false);
       setVideoEnded(false);
@@ -96,14 +93,14 @@ const CourseDetailPage = () => {
     setCountdownActive(false);
     setCountdown(10);
     if (videoEnded) {
+      // If countdown is cleared while videoEnded is true (e.g., user plays another video),
+      // reset videoEnded so the play overlay doesn't conflict.
       setVideoEnded(false);
     }
   };
 
   const handleVideoSelect = (video: VideoLecture) => {
     setSelectedVideoUrl(video.videoUrl);
-    // The useEffect hook triggered by selectedVideoUrl change will handle
-    // pausing the new video and resetting related states.
   };
 
   const playNextVideo = () => {
@@ -115,6 +112,7 @@ const CourseDetailPage = () => {
     } else {
       clearCountdown();
       console.log("End of playlist");
+       // Potentially set a "playlist ended" state here if needed
     }
   };
 
@@ -122,6 +120,7 @@ const CourseDetailPage = () => {
     if (videoRef.current) {
       if (videoRef.current.paused || videoRef.current.ended) {
         videoRef.current.play().catch(e => console.warn("Play action failed:", e));
+         if(videoEnded) setVideoEnded(false); // If re-playing after ended
       } else {
         videoRef.current.pause();
       }
@@ -131,10 +130,11 @@ const CourseDetailPage = () => {
   const handleSeek = (seconds: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime += seconds;
-      if (isPlaying && videoRef.current.paused) { // If seeking caused pause (e.g. end of video)
+      if (isPlaying && videoRef.current.paused) { 
         videoRef.current.play().catch(e => console.warn("Play after seek failed:", e));
       }
       clearCountdown();
+      if(videoEnded && seconds < 0) setVideoEnded(false); // If seeking back from ended state
     }
   };
 
@@ -149,7 +149,7 @@ const CourseDetailPage = () => {
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted); // Sync state
+      setIsMuted(videoRef.current.muted); 
     }
   };
 
@@ -231,7 +231,7 @@ const CourseDetailPage = () => {
                   if (videoRef.current) setIsMuted(videoRef.current.muted);
                 }}
                 onPlay={() => { setIsPlaying(true); clearCountdown(); }}
-                onPause={() => { setIsPlaying(false); clearCountdown(); }} // Clear countdown on manual pause too
+                onPause={() => { setIsPlaying(false); clearCountdown(); }} 
                 onEnded={() => {
                   setIsPlaying(false);
                   setVideoEnded(true);
@@ -251,27 +251,26 @@ const CourseDetailPage = () => {
                   </Button>
                 </div>
               )}
-              {!videoEnded && (
-                <div className="absolute bottom-0 left-0 right-0 bg-card/90 backdrop-blur-sm p-2 sm:p-3 flex items-center justify-between gap-1 sm:gap-2 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <Button variant="ghost" size="icon" onClick={togglePlayPause} title={isPlaying ? "Pause" : "Play"}>
-                      {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleSeek(-10)} title="Rewind 10s">
-                      <Rewind size={20} />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs hidden sm:inline">Speed:</span>
-                    {[0.5, 1, 1.5].map(rate => (
-                      <Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>
-                    ))}
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              
+              <div className="absolute bottom-0 left-0 right-0 bg-card/90 backdrop-blur-sm p-2 sm:p-3 flex items-center justify-between gap-1 sm:gap-2 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button variant="ghost" size="icon" onClick={togglePlayPause} title={isPlaying ? "Pause" : "Play"}>
+                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleSeek(-10)} title="Rewind 10s">
+                    <Rewind size={20} />
                   </Button>
                 </div>
-              )}
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <span className="text-xs hidden sm:inline">Speed:</span>
+                  {[0.5, 1, 1.5].map(rate => (
+                    <Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>
+                  ))}
+                </div>
+                <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
+                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center h-96 bg-muted rounded-lg shadow-inner">
@@ -285,5 +284,4 @@ const CourseDetailPage = () => {
 };
 
 export default CourseDetailPage;
-
     
