@@ -8,11 +8,11 @@ import type { Course, VideoLecture } from '@/types/course';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Rewind, FastForward, Volume2, VolumeX, MonitorPlay } from 'lucide-react';
+import { Play, Pause, Rewind, MonitorPlay, Volume2, VolumeX, CheckCircle, Circle } from 'lucide-react';
 
 const CourseDetailPage = () => {
   const params = useParams();
-  const courseId = params.courseId as string; // Ensure courseId is treated as string
+  const courseId = params.courseId as string;
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [course, setCourse] = useState<Course | null>(null);
@@ -20,13 +20,12 @@ const CourseDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-
   const [completedVideos, setCompletedVideos] = useState<string[]>([]);
-
   const [videoEnded, setVideoEnded] = useState(false);
   const [countdownActive, setCountdownActive] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const fetchCourse = async () => {
       if (!courseId) {
@@ -42,11 +41,9 @@ const CourseDetailPage = () => {
         if (foundCourse) {
           setCourse(foundCourse);
           if (foundCourse.videoLectures && foundCourse.videoLectures.length > 0) {
-            // Initially select the first video, but don't autoplay
             setSelectedVideoUrl(foundCourse.videoLectures[0].videoUrl);
           } else {
-            // Handle case where course has no videos
-             setSelectedVideoUrl(null); // Or a default "no video" message/state
+            setSelectedVideoUrl(null);
           }
         } else {
           setError("Course not found.");
@@ -61,46 +58,20 @@ const CourseDetailPage = () => {
     fetchCourse();
   }, [courseId]);
 
-
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (videoElement) {
-      const handlePlay = () => {
-        setIsPlaying(true);
-        clearCountdown();
-      };
-      const handlePause = () => {
-        setIsPlaying(false);
-        clearCountdown();
-      };
-      const handleEnded = () => {
-        setVideoEnded(true);
-        startCountdown();
-      };
-      const handleLoadedMetadata = () => {
-        if(videoElement) setIsMuted(videoElement.muted);
-        videoElement.pause();
-      };
-
-      videoElement.addEventListener('play', handlePlay);
-      videoElement.addEventListener('pause', handlePause);
-      videoElement.addEventListener('ended', handleEnded);
-
-      // Ensure video is paused initially after load
+    if (videoElement && selectedVideoUrl) {
+      // When a new video is selected (selectedVideoUrl changes),
+      // ensure it's paused and reset relevant states.
+      // The `key` prop on the <video> element handles re-mounting.
       videoElement.pause();
-      setIsPlaying(false); // Explicitly set playing state to false
-      setVideoEnded(false); // Reset video ended state on new video select
-      setCountdownActive(false); // Reset countdown state on new video select
-      setCountdown(10); // Reset countdown value
-      clearCountdown(); // Ensure any active timer is cleared
-
-      return () => {
-        videoElement.removeEventListener('play', handlePlay);
-        videoElement.removeEventListener('pause', handlePause);
-        videoElement.removeEventListener('ended', handleEnded);
-      };
+      setIsPlaying(false);
+      setVideoEnded(false);
+      setCountdownActive(false);
+      setCountdown(10);
+      clearCountdown();
     }
-  }, [selectedVideoUrl]); // Re-run when video URL changes
+  }, [selectedVideoUrl]);
 
   const startCountdown = () => {
     setCountdownActive(true);
@@ -121,71 +92,56 @@ const CourseDetailPage = () => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = null;
-      setCountdownActive(false);
-      setCountdown(10); // Reset countdown value
     }
-     // If the video has ended and countdown is cleared by user interaction (e.g., clicking play)
+    setCountdownActive(false);
+    setCountdown(10);
     if (videoEnded) {
-      setVideoEnded(false); // Reset video ended state
-      // Do not mark as completed if countdown is cleared by user interaction before it finishes
+      setVideoEnded(false);
     }
-    setVideoEnded(false); // Reset video ended state
   };
 
   const handleVideoSelect = (video: VideoLecture) => {
-    setSelectedVideoUrl(video.videoUrl); 
-    if (videoRef.current) {
-      videoRef.current.src = video.videoUrl;
-    }
-    // The useEffect hook triggered by selectedVideoUrl will handle loading and pausing.
+    setSelectedVideoUrl(video.videoUrl);
+    // The useEffect hook triggered by selectedVideoUrl change will handle
+    // pausing the new video and resetting related states.
   };
 
   const playNextVideo = () => {
     if (!course || !course.videoLectures || !selectedVideoUrl) return;
-
     const currentIndex = course.videoLectures.findIndex(video => video.videoUrl === selectedVideoUrl);
     const nextIndex = currentIndex + 1;
-
     if (nextIndex < course.videoLectures.length) {
       handleVideoSelect(course.videoLectures[nextIndex]);
     } else {
-      // Handle end of playlist
       clearCountdown();
-      // Optionally, show a message or loop back to the first video
       console.log("End of playlist");
     }
   };
 
-  const restartVideo = () => {
+  const togglePlayPause = () => {
     if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(e => console.warn("Restart play action failed:", e));
-      clearCountdown(); // Clear countdown if restarting
+      if (videoRef.current.paused || videoRef.current.ended) {
+        videoRef.current.play().catch(e => console.warn("Play action failed:", e));
+      } else {
+        videoRef.current.pause();
+      }
     }
   };
-
-   const togglePlayPause = () => {
-     if (videoRef.current) {
-       if (videoRef.current.paused || videoRef.current.ended) {
-         videoRef.current.play().catch(e => console.warn("Play action failed:", e));
-       } else {
-        videoRef.current.pause();
-       }
-     }
-   };
 
   const handleSeek = (seconds: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime += seconds;
+      if (isPlaying && videoRef.current.paused) { // If seeking caused pause (e.g. end of video)
+        videoRef.current.play().catch(e => console.warn("Play after seek failed:", e));
+      }
+      clearCountdown();
     }
   };
-  
+
   const changePlaybackRate = (rate: number) => {
     if (videoRef.current) {
-      // Limit playback rate between 0.5 and 1.5
       const limitedRate = Math.max(0.5, Math.min(1.5, rate));
       videoRef.current.playbackRate = limitedRate;
-       // Clear countdown if speed is changed during countdown
       if (countdownActive) clearCountdown();
     }
   };
@@ -193,14 +149,9 @@ const CourseDetailPage = () => {
   const toggleMute = () => {
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted); // Sync state
     }
   };
-
-   const completionPercentage = course && course.videoLectures && course.videoLectures.length > 0
-    ? (completedVideos.length / course.videoLectures.length) * 100
-    : 0;
-
-
 
   if (isLoading) {
     return (
@@ -242,11 +193,11 @@ const CourseDetailPage = () => {
           <h3 className="text-lg font-semibold mb-4 text-foreground border-t pt-4">Video Lectures</h3>
           {course.videoLectures && course.videoLectures.length > 0 ? (
             <ul className="space-y-2">
-              {course.videoLectures.map((video, index) => (
+              {course.videoLectures.map((video) => (
                 <li key={video.id}>
                   <button
-                    className= {`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl?'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
-                    onClick={() => { handleVideoSelect(video); if (videoRef.current) videoRef.current.play(); }}
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
+                    onClick={() => handleVideoSelect(video)}
                   >
                     <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
                     <span className="flex-grow text-left">{video.title}</span>
@@ -259,8 +210,8 @@ const CourseDetailPage = () => {
                     </span>
                   </button>
                   {selectedVideoUrl === video.videoUrl && countdownActive && (
-                     <p className="text-xs text-muted-foreground mt-1 px-3">Next lecture in {countdown}...</p>
-                   )}
+                    <p className="text-xs text-muted-foreground mt-1 px-3">Next lecture in {countdown}...</p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -270,73 +221,69 @@ const CourseDetailPage = () => {
         </aside>
         <main className="flex-1 bg-background p-0 md:p-4 rounded-lg">
           {selectedVideoUrl ? (
-            <div className="bg-black rounded-lg overflow-hidden shadow-2xl relative group aspect-video" onClick={togglePlayPause}>
-              <video 
-                ref={videoRef} 
-                key={selectedVideoUrl}  // Important for re-rendering when src changes
-                src={selectedVideoUrl} 
+            <div className="bg-black rounded-lg overflow-hidden shadow-2xl relative group aspect-video">
+              <video
+                ref={videoRef}
+                key={selectedVideoUrl}
+                src={selectedVideoUrl}
                 className="w-full aspect-video"
                 onLoadedMetadata={() => {
-                  if(videoRef.current) setIsMuted(videoRef.current.muted);
-                   // Ensure video is paused after metadata is loaded
+                  if (videoRef.current) setIsMuted(videoRef.current.muted);
                 }}
-                 onPlay={() => { setIsPlaying(true); clearCountdown(); }} // Clear countdown if user plays
-                 onPause={() => setIsPlaying(false)}
-                 onEnded={() => {
-                   setIsPlaying(false);
-                   setVideoEnded(true);
-                   startCountdown();
-                   // Add video ID to completed videos when it ends
-                   const currentVideo = course?.videoLectures?.find(v => v.videoUrl === selectedVideoUrl);
-                   if (currentVideo && !completedVideos.includes(currentVideo.id)) {
-                     setCompletedVideos(prev => [...prev, currentVideo.id]);
-                   }
-                 }}
+                onPlay={() => { setIsPlaying(true); clearCountdown(); }}
+                onPause={() => { setIsPlaying(false); clearCountdown(); }} // Clear countdown on manual pause too
+                onEnded={() => {
+                  setIsPlaying(false);
+                  setVideoEnded(true);
+                  startCountdown();
+                  const currentVideo = course?.videoLectures?.find(v => v.videoUrl === selectedVideoUrl);
+                  if (currentVideo && !completedVideos.includes(currentVideo.id)) {
+                    setCompletedVideos(prev => [...prev, currentVideo.id]);
+                  }
+                }}
               >
                 Your browser does not support the video tag.
               </video>
-               {!isPlaying && !videoEnded && (
-                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                   <Button variant="ghost" size="icon" className="h-20 w-20 text-white hover:bg-white/20" onClick={togglePlayPause}>
-                     <Play size={60} />
-                   </Button>
-                 </div>
-               )}
-
-               {!videoEnded && ( // Hide default controls and progress bar when video ends
-              <div className="bg-card/90 backdrop-blur-sm p-3 flex items-center justify-between gap-2 text-foreground">
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={togglePlayPause} title={isPlaying ? "Pause" : "Play"}>
-                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+              {!isPlaying && !videoEnded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 cursor-pointer" onClick={togglePlayPause}>
+                  <Button variant="ghost" size="icon" className="h-20 w-20 text-white hover:bg-white/20 pointer-events-none">
+                    <Play size={60} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleSeek(-10)} title="Rewind 10s">
-                    <Rewind size={20} />
-                  </Button>
-                </div>\n
-                <div className="flex items-center gap-2">
-                   <span className="text-xs">Speed:</span>
-                  {[0.5, 1, 1.5].map(rate => (<Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>))}\n
                 </div>
-                <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </Button>
-              </div>
-            )}
-          </div>
+              )}
+              {!videoEnded && (
+                <div className="absolute bottom-0 left-0 right-0 bg-card/90 backdrop-blur-sm p-2 sm:p-3 flex items-center justify-between gap-1 sm:gap-2 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Button variant="ghost" size="icon" onClick={togglePlayPause} title={isPlaying ? "Pause" : "Play"}>
+                      {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleSeek(-10)} title="Rewind 10s">
+                      <Rewind size={20} />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs hidden sm:inline">Speed:</span>
+                    {[0.5, 1, 1.5].map(rate => (
+                      <Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>
+                    ))}
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
+                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white">
-                {/* Content when no video is selected */}
-                <div className="flex items-center justify-center h-96 bg-muted rounded-lg shadow-inner">
-                  <p className="text-muted-foreground">Select a video to play or no videos available.</p>
-                </div>
-              </div>
-           )}
+            <div className="flex items-center justify-center h-96 bg-muted rounded-lg shadow-inner">
+              <p className="text-muted-foreground">Select a video to play or no videos available.</p>
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
 };
 
-import { CheckCircle, Circle, RotateCcw } from 'lucide-react';
-
 export default CourseDetailPage;
+
+    
