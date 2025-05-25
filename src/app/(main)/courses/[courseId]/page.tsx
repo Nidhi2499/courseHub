@@ -207,9 +207,6 @@ const CourseDetailPage = () => {
                       )}
                     </span>
                   </button>
-                  {selectedVideoUrl === video.videoUrl && countdownActive && (
-                    <p className="text-xs text-muted-foreground mt-1 px-3">Next lecture in {countdown}...</p>
-                  )}
                 </li>
               ))}
             </ul>
