@@ -2,7 +2,7 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-import { BookOpen, LogOut, Menu, UserCircle, Search, KeyRound } from "lucide-react";
+import { LogOut, Menu, UserCircle, Search, KeyRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -94,7 +94,7 @@ export default function Navbar() {
       setSuggestions(filteredSuggestions);
       setShowSuggestions(true);
     } else {
-      setSuggestions(courseTitles);
+      setSuggestions(courseTitles); // Show all titles if query is empty but input is focused
       setShowSuggestions(false);
     }
   };
@@ -102,12 +102,12 @@ export default function Navbar() {
   const handleSelectSuggestion = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
-    // Navigate to courses page with search query
     router.push(`/courses?search=${encodeURIComponent(suggestion)}`);
   };
 
   const navItems = [
-    { href: "/my-courses", label: "My Courses", icon: BookOpen },
+    // { href: "/my-courses", label: "MyCourses", icon: BookOpen }, // Removed "My Courses"
+    // { href: "/recommendations", label: "Recommendations", icon: Rss }, // Removed recommendations
   ];
 
   const UserAvatar = () => (
@@ -297,7 +297,6 @@ export default function Navbar() {
                           </p>
                         </div>
                      </div>
-                    {/* Replace DropdownMenuItem with div for mobile */}
                     <div
                       onClick={() => { handleChangePassword(); setMobileMenuOpen(false); }}
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -305,22 +304,13 @@ export default function Navbar() {
                       <KeyRound className="mr-2 h-4 w-4" />
                       <span>Change Password</span>
                     </div>
-                    {/* Replace Button with div for mobile */}
                     <div
                       onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                       className="flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors text-destructive hover:bg-destructive/10 hover:text-destructive mt-1"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
-
                     </div>
-                  </div>
-                )}
-                {!user && (
-                   <div className="mt-auto border-t pt-4">
-                    <Button asChild className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                      <Link href="/login">Sign In</Link>
-                    </Button>
                   </div>
                 )}
                 {!user && (
@@ -338,4 +328,3 @@ export default function Navbar() {
     </>
   );
 }
-

@@ -4,30 +4,20 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from "next/link";
-import { useEnrolledCourses } from '@/contexts/EnrolledCoursesContext';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
-import type { Course } from "@/types/course"; // Use shared type
+import type { Course } from "@/types/course";
 
 interface CourseCardProps {
   course: Course;
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const { enrolledCourses, enrollCourse } = useEnrolledCourses();
   const [currentImageSrc, setCurrentImageSrc] = useState(course.imageUrl);
 
   useEffect(() => {
-    // Update currentImageSrc if the course prop changes,
-    // effectively resetting any fallback that might have been triggered.
     setCurrentImageSrc(course.imageUrl);
   }, [course.imageUrl]);
-
-  const handleEnroll = () => {
-    enrollCourse(course.id);
-  };
 
   const handleImageError = () => {
     console.warn(`Failed to load image: ${course.imageUrl}. Falling back to default placeholder for course "${course.title}".`);
@@ -37,7 +27,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   return (
     <Card className="flex h-full w-full flex-col overflow-hidden transition-all hover:shadow-xl">
       <CardHeader className="p-0">
-        <div className="relative h-48 w-full group"> {/* Added group for potential hover effects on image if needed */}
+        <div className="relative h-48 w-full group">
           <Link href={`/courses/${course.id}`} passHref>
             <Image
               src={currentImageSrc}
@@ -46,7 +36,6 @@ export default function CourseCard({ course }: CourseCardProps) {
               className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
               data-ai-hint={course.dataAiHint}
               onError={handleImageError}
-              // Add unoptimized prop if the fallback image URL itself could cause issues with optimizer
               unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
             />
           </Link>
@@ -65,17 +54,7 @@ export default function CourseCard({ course }: CourseCardProps) {
           Duration: {course.duration}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex items-center justify-between">
-        <Button 
-          onClick={handleEnroll} 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
-          disabled={enrolledCourses.includes(course.id)} 
-          suppressHydrationWarning
-        >
-          {enrolledCourses.includes(course.id) ? 'Enrolled!' : 'Enroll Now'}
-          {!enrolledCourses.includes(course.id) && <ArrowRight className="ml-2 h-4 w-4" />}
-        </Button>
-      </CardFooter>
+      {/* CardFooter with Enroll button removed */}
     </Card>
   );
 }
