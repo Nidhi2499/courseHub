@@ -6,10 +6,7 @@ import Image from 'next/image';
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Course } from "@/types/course";
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
+import type { Course } from "@/types/course"; // Use shared type
 
 interface CourseCardProps {
   course: Course;
@@ -36,10 +33,10 @@ export default function CourseCard({ course }: CourseCardProps) {
             <div className="relative h-48 w-full">
               <Image
                 src={currentImageSrc}
-                alt={course.title || "Course Image"} // Fallback for alt text
+                alt={course.title || "Course Image"}
                 fill={true}
                 className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                data-ai-hint={course.dataAiHint || "course"} // Fallback for data-ai-hint
+                data-ai-hint={course.dataAiHint || "course"}
                 onError={handleImageError}
                 unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
               />
@@ -57,6 +54,11 @@ export default function CourseCard({ course }: CourseCardProps) {
             <div className="mt-3 text-xs text-muted-foreground">
               Duration: {course.duration}
             </div>
+            {course.videoLectures && course.videoLectures.length > 0 && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <span className="font-medium">First Lecture:</span> {course.videoLectures[0].title}
+              </div>
+            )}
           </CardContent>
         </Card>
       </a>
