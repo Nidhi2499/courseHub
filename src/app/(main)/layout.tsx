@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -31,7 +32,9 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <Navbar />
       <main className="flex-1">{children}</main>
       <footer className="py-6 text-center text-sm text-muted-foreground border-t">
-        © {new Date().getFullYear()} CourseHub. All rights reserved.
+        <p>© {new Date().getFullYear()} CourseHub. All rights reserved.</p>
+        <p className="mt-1">By Nidhi Tiwari</p>
+        <p>nidhitiwari1965@gmail.com</p>
       </footer>
     </div>
   );
