@@ -1,3 +1,4 @@
+
 # CourseHub Blueprint
 
 This document outlines the tech stack, features, and design choices for the CourseHub application.
@@ -40,10 +41,10 @@ This document outlines the tech stack, features, and design choices for the Cour
 *   **Autoplay Next Video:** When a video finishes, the next video in the playlist starts automatically after a 10-second countdown.
 *   **Mark Video as Completed:** Videos are marked as completed in the playlist sidebar after they finish playing.
 
-*   **Video Progress Bar/Seeking (Not Implemented):**
-    *   Currently, the custom video player **does not include a visual progress bar or scrubber**.
-    *   **Consequence:** Users cannot directly click or drag on a timeline to jump to specific points within the video. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the beginning).
-    *   **Rationale/Current State:** The absence of a progress bar means users are encouraged to watch videos more linearly. The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is used by the rewind button, but a user-facing draggable progress bar is not part of the current custom controls. This could be a design choice or a feature planned for future implementation.
+*   **Intentional Absence of Progress Bar/Seeking:**
+    *   The custom video player **deliberately does not include a visual progress bar or scrubber.**
+    *   **Consequence & Design Choice:** This design encourages users to engage with the content linearly and discourages arbitrary skipping. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the beginning).
+    *   **Rationale:** The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is utilized by the rewind button. However, a user-facing draggable progress bar is intentionally omitted to promote a more focused and complete viewing experience for each lecture.
 
 ### Personalized Recommendations (AI-Powered)
 *   A dedicated page where users can input their interests and learning history.
@@ -56,7 +57,7 @@ This document outlines the tech stack, features, and design choices for the Cour
 *   The application is designed to be responsive, adapting to various screen sizes using Tailwind CSS and responsive component design.
 
 ## Navigation
-*   Navbar with a link to "Courses", a search bar.
+*   Navbar with a link to "MyCourses", a search bar.
 *   User avatar dropdown with options for "Change Password" and "Log out."
 *   Mobile-responsive navigation with a sheet menu.
 
