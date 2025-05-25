@@ -1,9 +1,9 @@
 'use server';
 
-import { collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import type { Course } from '@/types/course';
-import { coursesData as initialCourses } from '@/data/courses'; // Rename to avoid conflict
+import { coursesData as initialCourses } from '@/data/courses'; 
 
 const COURSES_COLLECTION = 'courses';
 
@@ -31,7 +31,6 @@ export async function seedCoursesIfEmpty(): Promise<void> {
 
 export async function getCourses(): Promise<Course[]> {
   // Attempt to seed data if the collection is empty.
-  // This is more for development/prototyping. In production, seeding would be a separate process.
   await seedCoursesIfEmpty();
 
   const coursesCollectionRef = collection(db, COURSES_COLLECTION);
@@ -39,11 +38,9 @@ export async function getCourses(): Promise<Course[]> {
   const coursesList: Course[] = [];
   querySnapshot.forEach((doc) => {
     const courseData = doc.data();
-    // Prepend /assets/ to the imageUrl
-    if (courseData.imageUrl) {
-      courseData.imageUrl = `/assets/${courseData.imageUrl}`;
-    }
-    coursesList.push({ id: doc.id, ...courseData });
+    // The imageUrl from Firestore (seeded from data/courses.ts) should already be in the correct format (e.g., "/assets/image.jpeg")
+    // No further manipulation of imageUrl is needed here.
+    coursesList.push({ id: doc.id, ...courseData } as Course);
   });
   return coursesList.sort((a, b) => a.title.localeCompare(b.title));
 }
