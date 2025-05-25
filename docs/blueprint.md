@@ -10,7 +10,7 @@ This document outlines the tech stack, features, and design choices for the Cour
 *   **Styling:** Tailwind CSS
 *   **Generative AI:** Genkit (for AI-powered features like course recommendations)
 *   **Authentication:** Firebase Authentication
-*   **Database:** Cloud Firestore (for storing course data)
+*   **Database:** Cloud Firestore (for storing course data and user video progress)
 *   **Deployment:** Firebase Hosting (implied, common for Firebase projects)
 
 ## Key Features
@@ -30,6 +30,7 @@ This document outlines the tech stack, features, and design choices for the Cour
     *   Displays detailed information about a specific course.
     *   Includes a video player for viewing course lectures.
     *   Lists video lectures in a sidebar, allowing users to select different videos.
+    *   Shows progress bars and completion status for each video in the playlist sidebar for logged-in users.
 
 ### Video Player Functionality
 *   **Custom Controls:** The video player features a custom control bar that appears on hover.
@@ -39,12 +40,16 @@ This document outlines the tech stack, features, and design choices for the Cour
 *   **Playback Speed Control:** Options for 0.5x, 1x, and 1.5x speeds.
 *   **Fullscreen Toggle:** Allows users to view the video in fullscreen mode.
 *   **Autoplay Next Video:** When a video finishes, the next video in the playlist starts automatically after a 10-second countdown.
-*   **Mark Video as Completed:** Videos are marked as completed in the playlist sidebar after they finish playing.
+*   **Mark Video as Completed:** Videos are marked as completed in the playlist sidebar after they finish playing (for logged-in users).
+*   **Save and Resume Progress (Logged-in Users Only):**
+    *   For authenticated users, the video player automatically saves the current watching progress (timestamp) to Firestore.
+    *   When a logged-in user returns to a video, it will resume playing from the last saved interval.
+    *   Unauthenticated users will always start videos from the beginning.
 
-*   **Intentional Absence of Progress Bar/Seeking:**
-    *   The custom video player **deliberately does not include a visual progress bar or scrubber.**
-    *   **Consequence & Design Choice:** This design encourages users to engage with the content linearly and discourages arbitrary skipping. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the beginning).
-    *   **Rationale:** The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is utilized by the rewind button. However, a user-facing draggable progress bar is intentionally omitted to promote a more focused and complete viewing experience for each lecture.
+*   **Intentional Absence of Progress Bar/Seeking in Player Controls:**
+    *   The custom video player **deliberately does not include a visual progress bar or scrubber in its main control panel.**
+    *   **Consequence & Design Choice:** This design encourages users to engage with the content linearly and discourages arbitrary skipping within the player itself. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the last saved point for logged-in users, or from the beginning for others).
+    *   **Rationale:** The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is utilized by the rewind button and the progress resumption feature. However, a user-facing draggable progress bar in the main controls is intentionally omitted to promote a more focused and complete viewing experience for each lecture. Progress is visually indicated in the playlist sidebar for logged-in users.
 
 ### Personalized Recommendations (AI-Powered)
 *   A dedicated page where users can input their interests and learning history.
