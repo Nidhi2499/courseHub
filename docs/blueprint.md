@@ -50,8 +50,8 @@ CourseHub is a personalized online learning platform designed to offer users a c
         *   Progress is saved periodically during playback.
         *   Progress is saved when the video is paused, ends, or when the user navigates away/closes the tab.
     *   **Resume Playback:** When a logged-in user returns to a video, playback resumes from the last saved interval.
-    *   **Progress Bar:** A thin progress bar is displayed below each video title in the playlist, indicating the percentage watched by the logged-in user.
-    *   **Completion Marking:** For logged-in users, when a video is watched to completion, it's marked as complete.
+    *   **Progress Bar (Individual Video):** A thin progress bar is displayed below each video title in the playlist, indicating the percentage watched by the logged-in user.
+    *   **Completion Marking (Login Required):** For logged-in users, when a video is watched to completion, it's marked as complete.
         *   A green checkmark icon appears next to the video title in the playlist.
         *   This completion status is persisted in Firestore.
 *   **Video Seeking (Intentional Limitation):**
@@ -59,6 +59,19 @@ CourseHub is a personalized online learning platform designed to offer users a c
     *   This is an **intentional design choice** to encourage a more linear and complete viewing experience for course content. Users navigate via "Rewind 10s," sequential play, or re-selecting videos from the playlist.
 *   **Playlist Interaction:**
     *   The currently playing video title is highlighted in the playlist sidebar.
+*   **Overall Course Progress Display:**
+    *   Below the list of video titles on the course detail page, a 4px thick progress bar with rounded ends displays the user's overall progress for the entire course.
+    *   **Calculation Logic:**
+        1.  Iterate through each video lecture in the current course.
+        2.  Only consider videos for which `duration` information has been successfully recorded (via `videoStates` in Firestore).
+        3.  **`totalWatchedTime` Calculation:**
+            *   If a video is marked as `completed` in `videoStates`, its full `duration` is added.
+            *   If a video is not `completed`, its `currentTime` (from `videoStates`) is added. This `currentTime` is capped at the video's `duration` to prevent rewatched portions from over-inflating progress.
+        4.  **`totalKnownDuration` Calculation:**
+            *   Sum of `duration` for all videos in the course for which `duration` is known and recorded.
+        5.  **Percentage Calculation:** `(totalWatchedTime / totalKnownDuration) * 100`.
+        6.  The progress bar's green fill visually represents this percentage.
+        7.  The calculated percentage (e.g., "75%") is displayed as text next to/above the progress bar.
 
 ### 3.4. Personalized Recommendations (AI-Powered)
 *   Dedicated "Recommendations" page.
