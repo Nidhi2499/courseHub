@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { getCourses } from '@/services/courseService';
 import type { Course, VideoLecture } from '@/types/course';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Maximize, Minimize } from 'lucide-react'; // Added Maximize, Minimize
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Rewind, MonitorPlay, Volume2, VolumeX, CheckCircle, Circle } from 'lucide-react';
@@ -15,6 +15,7 @@ const CourseDetailPage = () => {
   const courseId = params.courseId as string;
   const [selectedVideoUrl, setSelectedVideoUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const playerWrapperRef = useRef<HTMLDivElement>(null); // Ref for the player wrapper
   const [course, setCourse] = useState<Course | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +26,7 @@ const CourseDetailPage = () => {
   const [countdownActive, setCountdownActive] = useState(false);
   const [countdown, setCountdown] = useState(10);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false); // State for fullscreen
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -70,6 +72,25 @@ const CourseDetailPage = () => {
       clearCountdown();
     }
   }, [selectedVideoUrl]);
+  
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange); // Firefox
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange); // IE/Edge
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
 
   const startCountdown = () => {
     setCountdownActive(true);
@@ -138,7 +159,7 @@ const CourseDetailPage = () => {
 
   const changePlaybackRate = (rate: number) => {
     if (videoRef.current) {
-      const limitedRate = Math.max(0.5, Math.min(1.5, rate));
+      const limitedRate = Math.max(0.5, Math.min(1.5, rate)); // Limit rate to avoid extreme values
       videoRef.current.playbackRate = limitedRate;
       if (countdownActive) clearCountdown();
     }
@@ -150,6 +171,35 @@ const CourseDetailPage = () => {
       setIsMuted(videoRef.current.muted); 
     }
   };
+
+  const toggleFullscreen = () => {
+    if (!playerWrapperRef.current) return;
+
+    if (!document.fullscreenElement) {
+      // Enter fullscreen
+      if (playerWrapperRef.current.requestFullscreen) {
+        playerWrapperRef.current.requestFullscreen();
+      } else if ((playerWrapperRef.current as any).mozRequestFullScreen) { // Firefox
+        (playerWrapperRef.current as any).mozRequestFullScreen();
+      } else if ((playerWrapperRef.current as any).webkitRequestFullscreen) { // Chrome, Safari and Opera
+        (playerWrapperRef.current as any).webkitRequestFullscreen();
+      } else if ((playerWrapperRef.current as any).msRequestFullscreen) { // IE/Edge
+        (playerWrapperRef.current as any).msRequestFullscreen();
+      }
+    } else {
+      // Exit fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) { // Firefox
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).webkitExitFullscreen) { // Chrome, Safari and Opera
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).msExitFullscreen) { // IE/Edge
+        (document as any).msExitFullscreen();
+      }
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -216,12 +266,12 @@ const CourseDetailPage = () => {
         </aside>
         <main className="flex-1 bg-background p-0 md:p-4 rounded-lg">
           {selectedVideoUrl ? (
-            <div className="bg-black rounded-lg overflow-hidden shadow-2xl relative group aspect-video">
+            <div ref={playerWrapperRef} className="bg-black rounded-lg overflow-hidden shadow-2xl relative group aspect-video">
               <video
                 ref={videoRef}
                 key={selectedVideoUrl}
                 src={selectedVideoUrl}
-                className="w-full aspect-video"
+                className="w-full h-full object-contain" // Ensure video fills wrapper in fullscreen
                 onLoadedMetadata={() => {
                   if (videoRef.current) setIsMuted(videoRef.current.muted);
                 }}
@@ -262,9 +312,14 @@ const CourseDetailPage = () => {
                     <Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>
                   ))}
                 </div>
-                <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </Button>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button variant="ghost" size="icon" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
+                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={toggleFullscreen} title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                    {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
@@ -279,6 +334,4 @@ const CourseDetailPage = () => {
 };
 
 export default CourseDetailPage;
-    
-
     
