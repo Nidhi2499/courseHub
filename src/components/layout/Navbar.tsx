@@ -105,11 +105,6 @@ export default function Navbar() {
     router.push(`/courses?search=${encodeURIComponent(suggestion)}`);
   };
 
-  const navItems = [
-    // { href: "/my-courses", label: "MyCourses", icon: BookOpen }, // Removed "My Courses"
-    // { href: "/recommendations", label: "Recommendations", icon: Rss }, // Removed recommendations
-  ];
-
   const UserAvatar = () => (
     <Avatar className="h-8 w-8">
       {user?.photoURL ? (
@@ -141,9 +136,9 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 max-w-screen-2xl items-center px-4 md:px-6 gap-4">
+        <div className="container flex h-16 max-w-screen-2xl items-center px-4 md:px-6 gap-2">
           <Link href="/courses" className="flex items-center gap-2 rtl:space-x-reverse mr-4">
-            <Image src="/assets/course-icon.png" alt="CourseHub Logo" width={50} height={50} className="rounded-md" />
+            <Image src="/assets/course-icon.png" alt="CourseHub Logo" width={100} height={50} className="rounded-md" />
             <span className="hidden text-xl font-bold text-primary sm:inline">CourseHub</span>
           </Link>
 
@@ -185,9 +180,6 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             <nav className="flex items-center gap-2">
-              {navItems.map((item) => (
-                <NavItem key={item.href} {...item} currentPath={pathname} />
-              ))}
             </nav>
             {user ? (
               <DropdownMenu>
@@ -235,7 +227,7 @@ export default function Navbar() {
               </SheetTrigger>
               <SheetContent side="right" className="w-[260px] bg-card p-4 flex flex-col">
                 <div className="mb-4 flex items-center space-x-2 rtl:space-x-reverse border-b pb-4">
-                  <Image src="/assets/course-icon.png" alt="CourseHub Logo" width={50} height={50} className="rounded-md" />
+                  <Image src="/assets/course-icon.png" alt="CourseHub Logo" width={80} height={50} className="rounded-md" />
                   <span className="text-lg font-bold text-primary">CourseHub</span>
                 </div>
 
@@ -279,9 +271,6 @@ export default function Navbar() {
                 </div>
                 
                 <nav className="flex flex-col space-y-1 flex-grow">
-                  {navItems.map((item) => (
-                    <NavItem key={item.href} {...item} currentPath={pathname} onClick={() => setMobileMenuOpen(false)} />
-                  ))}
                 </nav>
 
                 {user && (

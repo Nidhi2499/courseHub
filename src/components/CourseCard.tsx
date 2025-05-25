@@ -26,7 +26,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 
   return (
     <Link href={`/courses/${course.id}`} passHref legacyBehavior>
-      <a className="block h-full w-full transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg">
+      <a className="group block h-full w-full transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg group-hover:scale-105">
         <Card className="flex h-full w-full flex-col overflow-hidden">
           <CardHeader className="p-0">
             <div className="relative h-48 w-full group">
