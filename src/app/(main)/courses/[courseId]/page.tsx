@@ -50,7 +50,8 @@ const CourseDetailPage = () => {
         }
       } catch (err) {
         console.error("Failed to fetch course:", err);
-        setError("Failed to load course details. Please try again.");
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(`Failed to load course details. Please try again. (Details: ${errorMessage})`);
       } finally {
         setIsLoading(false);
       }
@@ -93,8 +94,6 @@ const CourseDetailPage = () => {
     setCountdownActive(false);
     setCountdown(10);
     if (videoEnded) {
-      // If countdown is cleared while videoEnded is true (e.g., user plays another video),
-      // reset videoEnded so the play overlay doesn't conflict.
       setVideoEnded(false);
     }
   };
@@ -112,7 +111,6 @@ const CourseDetailPage = () => {
     } else {
       clearCountdown();
       console.log("End of playlist");
-       // Potentially set a "playlist ended" state here if needed
     }
   };
 
@@ -120,7 +118,7 @@ const CourseDetailPage = () => {
     if (videoRef.current) {
       if (videoRef.current.paused || videoRef.current.ended) {
         videoRef.current.play().catch(e => console.warn("Play action failed:", e));
-         if(videoEnded) setVideoEnded(false); // If re-playing after ended
+         if(videoEnded) setVideoEnded(false); 
       } else {
         videoRef.current.pause();
       }
@@ -134,7 +132,7 @@ const CourseDetailPage = () => {
         videoRef.current.play().catch(e => console.warn("Play after seek failed:", e));
       }
       clearCountdown();
-      if(videoEnded && seconds < 0) setVideoEnded(false); // If seeking back from ended state
+      if(videoEnded && seconds < 0) setVideoEnded(false); 
     }
   };
 
@@ -284,4 +282,6 @@ const CourseDetailPage = () => {
 };
 
 export default CourseDetailPage;
+    
+
     
