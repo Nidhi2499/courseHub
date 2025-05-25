@@ -31,9 +31,8 @@ const CourseDetailPage = () => {
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // For saving progress
   const saveProgressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const currentVideoIdRef = useRef<string | null>(null); // To store ID of the video currently in player
+  const currentVideoIdRef = useRef<string | null>(null);
 
   const fetchCourseData = useCallback(async () => {
     if (!courseId) {
@@ -51,7 +50,7 @@ const CourseDetailPage = () => {
         if (foundCourse.videoLectures && foundCourse.videoLectures.length > 0) {
           const firstVideo = foundCourse.videoLectures[0];
           setSelectedVideoUrl(firstVideo.videoUrl);
-          currentVideoIdRef.current = firstVideo.id; // Set initial video ID
+          currentVideoIdRef.current = firstVideo.id;
         } else {
           setSelectedVideoUrl(null);
           currentVideoIdRef.current = null;
@@ -75,47 +74,26 @@ const CourseDetailPage = () => {
   const handleActualSaveProgress = useCallback(async () => {
     if (user && videoRef.current && currentVideoIdRef.current && videoRef.current.currentTime > 0) {
       try {
-        await saveVideoProgress(user.uid, currentVideoIdRef.current, videoRef.current.currentTime);
+        // Check if the video element still has a valid source and isn't in an error state
+        if (videoRef.current.src && videoRef.current.networkState !== videoRef.current.NETWORK_NO_SOURCE) {
+           await saveVideoProgress(user.uid, currentVideoIdRef.current, videoRef.current.currentTime);
+        }
       } catch (e) {
         console.error("Failed to save progress:", e);
       }
     }
   }, [user]);
 
-  useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement || !user || !currentVideoIdRef.current) return;
-
-    // Load progress when video element is ready and user/video ID is available
-    const loadAndUpdateProgress = async () => {
-      const progress = await getVideoProgress(user.uid, currentVideoIdRef.current!);
-      if (progress !== null && videoElement.readyState >= 1) { // HAVE_METADATA or more
-        videoElement.currentTime = progress;
-      } else if (progress !== null) {
-        const onMetadataLoaded = () => {
-          videoElement.currentTime = progress;
-          videoElement.removeEventListener('loadedmetadata', onMetadataLoaded);
-        };
-        videoElement.addEventListener('loadedmetadata', onMetadataLoaded);
-      }
-    };
-
-    loadAndUpdateProgress();
-
-  }, [selectedVideoUrl, user, course]); // Re-run if selected video or user changes
-
   // Effect for resetting player state & handling progress for PREVIOUS video
   useEffect(() => {
     const videoElement = videoRef.current;
-    // Save progress of the *previous* video before changing source or unmounting
-    const previousVideoId = currentVideoIdRef.current;
-
-    // Set new video ID
+    
+    // Set new video ID based on the current selectedVideoUrl
     const newSelectedVideo = course?.videoLectures?.find(v => v.videoUrl === selectedVideoUrl);
     currentVideoIdRef.current = newSelectedVideo?.id || null;
 
     if (videoElement) {
-      videoElement.pause();
+      videoElement.pause(); // Ensure video starts paused when source changes via key
       setIsPlaying(false);
       setVideoEnded(false);
       setCountdownActive(false);
@@ -123,19 +101,13 @@ const CourseDetailPage = () => {
       clearCountdown();
     }
 
-    return () => { // Cleanup function
-      if (user && videoElement && previousVideoId && videoElement.currentTime > 0 && !videoElement.ended) {
-         // Check if the source is still the one for previousVideoId before saving
-        const isStillPreviousVideo = course?.videoLectures?.find(v => v.id === previousVideoId)?.videoUrl === videoElement.src;
-        if(isStillPreviousVideo) {
-            saveVideoProgress(user.uid, previousVideoId, videoElement.currentTime);
-        }
-      }
+    // Cleanup for debounced save timer
+    return () => {
       if (saveProgressTimeoutRef.current) {
         clearTimeout(saveProgressTimeoutRef.current);
       }
     };
-  }, [selectedVideoUrl, user, course, handleActualSaveProgress]);
+  }, [selectedVideoUrl, course]);
 
 
   useEffect(() => {
@@ -173,12 +145,12 @@ const CourseDetailPage = () => {
   };
 
   const handleVideoSelect = (video: VideoLecture) => {
-    // Save progress of current video before switching
-    if (videoRef.current && videoRef.current.currentTime > 0 && !videoRef.current.ended && currentVideoIdRef.current && user) {
+    // Save progress of current video *before* changing selectedVideoUrl
+    if (user && videoRef.current && currentVideoIdRef.current && videoRef.current.currentTime > 0 && !videoRef.current.ended) {
        saveVideoProgress(user.uid, currentVideoIdRef.current, videoRef.current.currentTime);
     }
     setSelectedVideoUrl(video.videoUrl);
-    // currentVideoIdRef will be updated by the useEffect for selectedVideoUrl
+    // currentVideoIdRef.current will be updated by the useEffect reacting to selectedVideoUrl
   };
 
   const playNextVideo = () => {
@@ -197,7 +169,7 @@ const CourseDetailPage = () => {
     if (videoRef.current) {
       if (videoRef.current.paused || videoRef.current.ended) {
         videoRef.current.play().catch(e => console.warn("Play action failed:", e));
-        if (videoEnded) setVideoEnded(false);
+        if (videoEnded) setVideoEnded(false); // Allow replaying ended video
       } else {
         videoRef.current.pause();
       }
@@ -207,17 +179,17 @@ const CourseDetailPage = () => {
   const handleSeek = (seconds: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime += seconds;
-      if (isPlaying && videoRef.current.paused) {
+      if (isPlaying && videoRef.current.paused) { // If was playing, resume after seek
         videoRef.current.play().catch(e => console.warn("Play after seek failed:", e));
       }
-      clearCountdown();
-      if (videoEnded && seconds < 0) setVideoEnded(false);
+      clearCountdown(); // User interacted, cancel countdown
+      if (videoEnded && seconds < 0) setVideoEnded(false); // If rewinding an ended video
     }
   };
 
   const changePlaybackRate = (rate: number) => {
     if (videoRef.current) {
-      const limitedRate = Math.max(0.5, Math.min(2, rate)); // Allow up to 2x
+      const limitedRate = Math.max(0.5, Math.min(2, rate));
       videoRef.current.playbackRate = limitedRate;
       if (countdownActive) clearCountdown();
     }
@@ -251,13 +223,13 @@ const CourseDetailPage = () => {
     }
     saveProgressTimeoutRef.current = setTimeout(() => {
       handleActualSaveProgress();
-    }, 3000); // Save every 3 seconds of continuous play
+    }, 3000); 
   }, [handleActualSaveProgress]);
 
-  // Component unmount cleanup
+  // Component unmount cleanup: save progress of the currently active video
   useEffect(() => {
     return () => {
-      handleActualSaveProgress(); // Save one last time on unmount
+      handleActualSaveProgress(); 
       if (saveProgressTimeoutRef.current) {
         clearTimeout(saveProgressTimeoutRef.current);
       }
@@ -265,7 +237,7 @@ const CourseDetailPage = () => {
         clearInterval(countdownTimerRef.current);
       }
     };
-  }, [handleActualSaveProgress]);
+  }, [handleActualSaveProgress]); // Re-run if handleActualSaveProgress changes (due to user change)
 
 
   if (isLoading) {
@@ -336,15 +308,14 @@ const CourseDetailPage = () => {
             <div ref={playerWrapperRef} className="bg-black rounded-lg overflow-hidden shadow-2xl relative group aspect-video">
               <video
                 ref={videoRef}
-                key={selectedVideoUrl} // Important: Re-mounts video when src changes
+                key={selectedVideoUrl} 
                 src={selectedVideoUrl}
                 className="w-full h-full object-contain"
                 onLoadedMetadata={() => {
                   if (videoRef.current) setIsMuted(videoRef.current.muted);
-                  // Attempt to load progress once metadata is loaded
-                  if (user && currentVideoIdRef.current) {
+                  if (user && currentVideoIdRef.current && videoRef.current) { // Ensure videoRef.current exists
                     getVideoProgress(user.uid, currentVideoIdRef.current).then(progress => {
-                      if (progress !== null && videoRef.current) {
+                      if (progress !== null && videoRef.current) { // Double check videoRef.current
                         videoRef.current.currentTime = progress;
                       }
                     });
@@ -354,12 +325,12 @@ const CourseDetailPage = () => {
                 onPause={() => {
                   setIsPlaying(false);
                   clearCountdown();
-                  handleActualSaveProgress(); // Save progress on pause
+                  handleActualSaveProgress(); 
                 }}
                 onEnded={() => {
                   setIsPlaying(false);
                   setVideoEnded(true);
-                  handleActualSaveProgress(); // Save progress on end
+                  handleActualSaveProgress(); 
                   startCountdown();
                   const currentVideo = course?.videoLectures?.find(v => v.videoUrl === selectedVideoUrl);
                   if (currentVideo && !completedVideos.includes(currentVideo.id)) {
@@ -367,7 +338,7 @@ const CourseDetailPage = () => {
                   }
                 }}
                 onTimeUpdate={() => {
-                  debouncedSaveProgress(); // Debounce progress saving during playback
+                  debouncedSaveProgress(); 
                 }}
               >
                 Your browser does not support the video tag.
@@ -397,7 +368,7 @@ const CourseDetailPage = () => {
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-xs hidden sm:inline">Speed:</span>
-                  {[0.5, 1, 1.5, 2].map(rate => ( // Added 2x speed
+                  {[0.5, 1, 1.5, 2].map(rate => ( 
                     <Button key={rate} variant="ghost" size="sm" onClick={() => changePlaybackRate(rate)} className={`text-xs px-2 py-1 h-auto ${videoRef.current?.playbackRate === rate ? 'bg-muted' : ''}`}>{rate}x</Button>
                   ))}
                 </div>
@@ -423,3 +394,5 @@ const CourseDetailPage = () => {
 };
 
 export default CourseDetailPage;
+
+    
