@@ -1,26 +1,65 @@
-# **App Name**: CourseHub
+# CourseHub Blueprint
 
-## Core Features:
+This document outlines the tech stack, features, and design choices for the CourseHub application.
 
-- Email Login: Email/password login.
-- Forgot Password: Provide link to the user by sending the reset link to the user email
-- Google Login: Authenticate via Google account popup.
-- Create Account: Account creation page for new users with password verification. Password requirements: 8+ characters, begins with _ or alphabet, at least one number, one special character, one lowercase letter, and one uppercase letter.
-- Course Listing: Display a list of available courses after successful login and a enroll button below every course to the left of it.
-- Personalized Recommendations: Use a generative AI tool to provide personalized course recommendations.
+## Technology Stack
 
-- My Courses Page: A dedicated page to display courses the user has enrolled in.
-- Course Enrollment: Users can enroll in a course by clicking the "Enroll Now" button on the Course Card.
-- Enroll Button State: The "Enroll Now" button text changes to "Enrolled!" after successful enrollment.
-- Image Click Navigation: Clicking the course image on the Course Card navigates to the /courses page with the course ID as a query parameter.
-- Card Content Click Navigation: Clicking the Course Card content (excluding the image and enroll button) navigates to a dynamic page displaying detailed information for that course (/courses/[courseId]).
-## Style Guidelines:
+*   **Frontend Framework:** Next.js (with App Router)
+*   **UI Components:** React, ShadCN UI
+*   **Styling:** Tailwind CSS
+*   **Generative AI:** Genkit (for AI-powered features like course recommendations)
+*   **Authentication:** Firebase Authentication
+*   **Database:** Cloud Firestore (for storing course data)
+*   **Deployment:** Firebase Hosting (implied, common for Firebase projects)
 
-- Primary color: Deep indigo (#3F51B5) for a sense of professionalism and trust.
-- Background color: Very light indigo (#F0F2F9). It provides a subtle, clean backdrop that won't distract from the courses.
-- Accent color: A vibrant purple (#9C27B0) to highlight key interactive elements. It's distinct from the primary, drawing user attention without overwhelming the design.
-- Clean, sans-serif font for headers to ensure readability and a modern feel.
-- Slightly smaller font size for body text to encourage engagement.
-- Use minimalist, consistent icons for course categories to provide visual cues.
-- Ensure a responsive design that adapts to different screen sizes and devices.
-- Subtle transitions for loading new courses and displaying course details to enhance user experience.
+## Key Features
+
+### User Authentication
+*   Sign Up with Email/Password
+*   Login with Email/Password
+*   Login with Google
+*   Forgot Password (Email Reset)
+*   Change Password (for authenticated users)
+
+### Course Management & Display
+*   **Course Dashboard:** Displays all available courses fetched from Firestore.
+    *   Each course is presented as a clickable card leading to its detail page.
+    *   Course cards show title, category, level, description, duration, and an image.
+*   **Course Detail Page:**
+    *   Displays detailed information about a specific course.
+    *   Includes a video player for viewing course lectures.
+    *   Lists video lectures in a sidebar, allowing users to select different videos.
+
+### Video Player Functionality
+*   **Custom Controls:** The video player features a custom control bar that appears on hover.
+*   **Play/Pause:** Toggle video playback.
+*   **Rewind:** A "Rewind 10s" button.
+*   **Mute/Unmute:** Toggle audio.
+*   **Playback Speed Control:** Options for 0.5x, 1x, and 1.5x speeds.
+*   **Fullscreen Toggle:** Allows users to view the video in fullscreen mode.
+*   **Autoplay Next Video:** When a video finishes, the next video in the playlist starts automatically after a 10-second countdown.
+*   **Mark Video as Completed:** Videos are marked as completed in the playlist sidebar after they finish playing.
+
+*   **Video Progress Bar/Seeking (Not Implemented):**
+    *   Currently, the custom video player **does not include a visual progress bar or scrubber**.
+    *   **Consequence:** Users cannot directly click or drag on a timeline to jump to specific points within the video. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the beginning).
+    *   **Rationale/Current State:** The absence of a progress bar means users are encouraged to watch videos more linearly. The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is used by the rewind button, but a user-facing draggable progress bar is not part of the current custom controls. This could be a design choice or a feature planned for future implementation.
+
+### Personalized Recommendations (AI-Powered)
+*   A dedicated page where users can input their interests and learning history.
+*   Genkit AI flow processes this input to provide personalized course recommendations.
+
+### User Profile Management
+*   Authenticated users can navigate to a page to change their password.
+
+## Responsiveness
+*   The application is designed to be responsive, adapting to various screen sizes using Tailwind CSS and responsive component design.
+
+## Navigation
+*   Navbar with a link to "Courses", a search bar.
+*   User avatar dropdown with options for "Change Password" and "Log out."
+*   Mobile-responsive navigation with a sheet menu.
+
+## Styling
+*   Customizable theme using CSS variables in `src/app/globals.css`.
+*   Utilizes ShadCN UI components for a consistent and modern look and feel.
