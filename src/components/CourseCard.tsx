@@ -25,36 +25,37 @@ export default function CourseCard({ course }: CourseCardProps) {
   };
 
   return (
-    <Card className="flex h-full w-full flex-col overflow-hidden transition-all hover:shadow-xl">
-      <CardHeader className="p-0">
-        <div className="relative h-48 w-full group">
-          <Link href={`/courses/${course.id}`} passHref>
-            <Image
-              src={currentImageSrc}
-              alt={course.title}
-              fill={true}
-              className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-              data-ai-hint={course.dataAiHint}
-              onError={handleImageError}
-              unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
-            />
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow p-4 pt-4">
-        <div className="mb-2 flex items-center justify-between">
-          <Badge variant="secondary">{course.category}</Badge>
-          <Badge variant="outline">{course.level}</Badge>
-        </div>
-        <CardTitle className="mb-1 text-xl">{course.title}</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground line-clamp-3">
-          {course.description}
-        </CardDescription>
-        <div className="mt-3 text-xs text-muted-foreground">
-          Duration: {course.duration}
-        </div>
-      </CardContent>
-      {/* CardFooter with Enroll button removed */}
-    </Card>
+    <Link href={`/courses/${course.id}`} passHref legacyBehavior>
+      <a className="block h-full w-full transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg">
+        <Card className="flex h-full w-full flex-col overflow-hidden">
+          <CardHeader className="p-0">
+            <div className="relative h-48 w-full group">
+              <Image
+                src={currentImageSrc}
+                alt={course.title}
+                fill={true}
+                className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                data-ai-hint={course.dataAiHint}
+                onError={handleImageError}
+                unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
+              />
+            </div>
+          </CardHeader>
+          <CardContent className="flex-grow p-4 pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <Badge variant="secondary">{course.category}</Badge>
+              <Badge variant="outline">{course.level}</Badge>
+            </div>
+            <CardTitle className="mb-1 text-xl">{course.title}</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground line-clamp-3">
+              {course.description}
+            </CardDescription>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Duration: {course.duration}
+            </div>
+          </CardContent>
+        </Card>
+      </a>
+    </Link>
   );
 }
