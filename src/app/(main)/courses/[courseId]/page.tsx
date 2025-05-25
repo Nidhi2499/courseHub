@@ -2,7 +2,7 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { getCourses } from '@/services/courseService';
 import type { Course, VideoLecture } from '@/types/course';
 import { Loader2, Maximize, Minimize, Play, Pause, Rewind, MonitorPlay, Volume2, VolumeX, CheckCircle, Circle } from 'lucide-react';
@@ -96,17 +96,18 @@ const CourseDetailPage = () => {
         completed: videoRef.current.ended || videoStates.get(videoId)?.completed || false,
       };
       
-      // Ensure duration is only saved if it's a valid number
       if (isNaN(progressData.duration ?? NaN)) {
           delete progressData.duration;
       }
       
       try {
+        // Only save if there's a src and the video is not in an error state or no source.
+        // And if there's actual data to update.
         if (videoRef.current.src && videoRef.current.networkState !== videoRef.current.NETWORK_NO_SOURCE && Object.keys(progressData).length > 0) {
            await saveVideoProgress(user.uid, videoId, progressData);
            setVideoStates(prev => {
             const newStates = new Map(prev);
-            const existingState = newStates.get(videoId) || {};
+            const existingState = newStates.get(videoId) || { completed: false, currentTime: 0, duration: 0 }; // Provide default for existingState
             newStates.set(videoId, { ...existingState, ...progressData } as UserVideoState);
             return newStates;
            });
@@ -264,7 +265,7 @@ const CourseDetailPage = () => {
 
   useEffect(() => {
     return () => {
-      if (currentVideoIdRef.current && videoRef.current && !isNaN(videoRef.current.currentTime) && !isNaN(videoRef.current.duration)) {
+      if (user && currentVideoIdRef.current && videoRef.current && !isNaN(videoRef.current.currentTime) && !isNaN(videoRef.current.duration)) {
           handleActualSaveProgress(currentVideoIdRef.current, { 
             currentTime: videoRef.current.currentTime, 
             duration: videoRef.current.duration,
@@ -278,7 +279,30 @@ const CourseDetailPage = () => {
         clearInterval(countdownTimerRef.current);
       }
     };
-  }, [handleActualSaveProgress]);
+  }, [handleActualSaveProgress, user]);
+
+  const overallCourseProgressPercent = useMemo(() => {
+    if (!course || !course.videoLectures || course.videoLectures.length === 0 || videoStates.size === 0) {
+      return 0;
+    }
+
+    let totalKnownDuration = 0;
+    let totalWatchedTime = 0;
+
+    course.videoLectures.forEach(video => {
+      const state = videoStates.get(video.id);
+      if (state && state.duration && state.duration > 0) {
+        totalKnownDuration += state.duration;
+        if (state.completed) {
+          totalWatchedTime += state.duration;
+        } else if (state.currentTime) {
+          totalWatchedTime += Math.min(state.currentTime, state.duration);
+        }
+      }
+    });
+
+    return totalKnownDuration > 0 ? (totalWatchedTime / totalKnownDuration) * 100 : 0;
+  }, [course, videoStates]);
 
 
   if (isLoading) {
@@ -320,35 +344,46 @@ const CourseDetailPage = () => {
           <p className="text-sm text-muted-foreground mb-4">Category: {course.category} | Level: {course.level}</p>
           <h3 className="text-lg font-semibold mb-4 text-foreground border-t pt-4">Video Lectures</h3>
           {course.videoLectures && course.videoLectures.length > 0 ? (
-            <ul className="space-y-2">
-              {course.videoLectures.map((video) => {
-                const videoState = videoStates.get(video.id);
-                const progressPercent = (videoState && videoState.duration && videoState.currentTime) ? (videoState.currentTime / videoState.duration) * 100 : 0;
-                const isCompleted = videoState?.completed || progressPercent >= 99.9;
+            <>
+              <ul className="space-y-2">
+                {course.videoLectures.map((video) => {
+                  const videoState = videoStates.get(video.id);
+                  const progressPercent = (videoState && videoState.duration && videoState.currentTime) ? (videoState.currentTime / videoState.duration) * 100 : 0;
+                  const isCompleted = videoState?.completed || progressPercent >= 99.9;
 
-                return (
-                  <li key={video.id}>
-                    <button
-                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
-                      onClick={() => handleVideoSelect(video)}
-                    >
-                      <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <div className="flex-grow">
-                        <span className="block text-left">{video.title}</span>
-                        <Progress value={progressPercent} className="h-1 w-full mt-1 [&>div]:bg-primary" />
-                      </div>
-                      <span className="flex-shrink-0 ml-2">
-                        {isCompleted ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <Circle size={16} className="text-gray-400" />
-                        )}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+                  return (
+                    <li key={video.id}>
+                      <button
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
+                        onClick={() => handleVideoSelect(video)}
+                      >
+                        <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <div className="flex-grow">
+                          <span className="block text-left">{video.title}</span>
+                          <Progress value={progressPercent} className="h-1 w-full mt-1 [&>div]:bg-primary" />
+                        </div>
+                        <span className="flex-shrink-0 ml-2">
+                          {isCompleted ? (
+                            <CheckCircle size={16} className="text-green-500" />
+                          ) : (
+                            <Circle size={16} className="text-gray-400" />
+                          )}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="mt-6 mb-2">
+                <p className="text-xs text-muted-foreground mb-1 text-center">Overall Course Progress: {overallCourseProgressPercent.toFixed(0)}%</p>
+                <div className="h-[4px] w-full bg-muted rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-green-500 rounded-full transition-all duration-300 ease-in-out"
+                        style={{ width: `${overallCourseProgressPercent}%` }}
+                    />
+                </div>
+              </div>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">No video lectures available for this course yet.</p>
           )}
@@ -380,7 +415,7 @@ const CourseDetailPage = () => {
                 onPause={() => {
                   setIsPlaying(false);
                   clearCountdown();
-                   if (currentVideoIdRef.current && videoRef.current && !isNaN(videoRef.current.currentTime) && !isNaN(videoRef.current.duration)) {
+                   if (user && currentVideoIdRef.current && videoRef.current && !isNaN(videoRef.current.currentTime) && !isNaN(videoRef.current.duration)) {
                       handleActualSaveProgress(currentVideoIdRef.current, { currentTime: videoRef.current.currentTime, duration: videoRef.current.duration });
                   }
                 }}
@@ -388,9 +423,9 @@ const CourseDetailPage = () => {
                   setIsPlaying(false);
                   setVideoEnded(true);
                   const currentVideo = course?.videoLectures?.find(v => v.videoUrl === selectedVideoUrl);
-                  if (currentVideo && videoRef.current) {
+                  if (user && currentVideo && videoRef.current) {
                      handleActualSaveProgress(currentVideo.id, { 
-                       currentTime: videoRef.current.duration, // Mark as fully watched
+                       currentTime: videoRef.current.duration, 
                        duration: videoRef.current.duration,
                        completed: true 
                      });
@@ -403,12 +438,14 @@ const CourseDetailPage = () => {
                     const videoId = currentVideoIdRef.current;
                     const currentTime = videoRef.current.currentTime;
                     const duration = videoRef.current.duration;
-                    setVideoStates(prev => {
-                        const newStates = new Map(prev);
-                        const existingState = newStates.get(videoId) || {completed: false};
-                        newStates.set(videoId, { ...existingState, currentTime, duration: duration || existingState.duration } as UserVideoState);
-                        return newStates;
-                    });
+                    if (!isNaN(currentTime) && !isNaN(duration)) {
+                        setVideoStates(prev => {
+                            const newStates = new Map(prev);
+                            const existingState = newStates.get(videoId) || {completed: false, currentTime: 0, duration: 0};
+                            newStates.set(videoId, { ...existingState, currentTime, duration: duration || existingState.duration } as UserVideoState);
+                            return newStates;
+                        });
+                    }
                   }
                 }}
               >
