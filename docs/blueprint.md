@@ -1,71 +1,106 @@
 
-# CourseHub Blueprint
+# CourseHub - Application Blueprint
 
-This document outlines the tech stack, features, and design choices for the CourseHub application.
+## 1. Overview
 
-## Technology Stack
+CourseHub is a personalized online learning platform designed to offer users a curated selection of courses. It features user authentication, course browsing, video lectures, and personalized course recommendations based on user interests and learning history.
 
-*   **Frontend Framework:** Next.js (with App Router)
-*   **UI Components:** React, ShadCN UI
-*   **Styling:** Tailwind CSS
-*   **Generative AI:** Genkit (for AI-powered features like course recommendations)
-*   **Authentication:** Firebase Authentication
-*   **Database:** Cloud Firestore (for storing course data and user video progress)
-*   **Deployment:** Firebase Hosting (implied, common for Firebase projects)
+## 2. Tech Stack
 
-## Key Features
+*   **Frontend:** Next.js (with App Router), React, TypeScript
+*   **UI:** ShadCN UI Components, Tailwind CSS
+*   **State Management:** React Context API (for auth, potentially video progress)
+*   **Backend/Authentication:** Firebase (Authentication, Firestore for course data and user progress)
+*   **Generative AI:** Genkit (for course recommendations)
 
-### User Authentication
-*   Sign Up with Email/Password
-*   Login with Email/Password
-*   Login with Google
-*   Forgot Password (Email Reset)
-*   Change Password (for authenticated users)
+## 3. Core Features
 
-### Course Management & Display
-*   **Course Dashboard:** Displays all available courses fetched from Firestore.
-    *   Each course is presented as a clickable card leading to its detail page.
-    *   Course cards show title, category, level, description, duration, and an image.
+### 3.1. User Authentication
+*   User Sign-up (Email/Password)
+*   User Login (Email/Password, Google OAuth)
+*   Forgot Password functionality
+*   Change Password functionality for logged-in users
+*   Secure session management.
+
+### 3.2. Course Management & Display
+*   **Course Dashboard:** Displays all available courses using `CourseCard` components.
+    *   Courses fetched from Firestore.
+    *   Seeding mechanism to populate Firestore with initial course data if the collection is empty.
 *   **Course Detail Page:**
-    *   Displays detailed information about a specific course.
-    *   Includes a video player for viewing course lectures.
-    *   Lists video lectures in a sidebar, allowing users to select different videos.
-    *   Shows progress bars and completion status for each video in the playlist sidebar for logged-in users.
+    *   Displays selected course information.
+    *   Lists video lectures for the selected course.
+*   **Course Card Component:**
+    *   Displays course title, description, category, level, duration, and image.
+    *   Entire card is clickable, navigating to the course detail page.
+    *   Uses `next/image` for optimized image loading, with fallbacks for broken image URLs.
 
-### Video Player Functionality
-*   **Custom Controls:** The video player features a custom control bar that appears on hover.
-*   **Play/Pause:** Toggle video playback.
-*   **Rewind:** A "Rewind 10s" button.
-*   **Mute/Unmute:** Toggle audio.
-*   **Playback Speed Control:** Options for 0.5x, 1x, and 1.5x speeds.
-*   **Fullscreen Toggle:** Allows users to view the video in fullscreen mode.
-*   **Autoplay Next Video:** When a video finishes, the next video in the playlist starts automatically after a 10-second countdown.
-*   **Mark Video as Completed:** Videos are marked as completed in the playlist sidebar after they finish playing (for logged-in users).
-*   **Save and Resume Progress (Logged-in Users Only):**
-    *   For authenticated users, the video player automatically saves the current watching progress (timestamp) to Firestore.
-    *   When a logged-in user returns to a video, it will resume playing from the last saved interval.
-    *   Unauthenticated users will always start videos from the beginning.
+### 3.3. Video Player Functionality
+*   Custom video player controls for lectures on the course detail page.
+*   **Controls Include:**
+    *   Play/Pause toggle.
+    *   Rewind 10 seconds.
+    *   Mute/Unmute toggle.
+    *   Playback speed adjustment (0.5x, 1x, 1.5x, 2x).
+    *   Fullscreen toggle.
+*   **Autoplay Next Video:**
+    *   When a video ends, a 10-second countdown initiates to automatically play the next video in the playlist.
+    *   Users can cancel the countdown or play the next video immediately.
+*   **Video Progress & Completion Tracking (Login Required):**
+    *   **Progress Saving:** For logged-in users, video playback progress (current time, duration) is automatically saved to Firestore.
+        *   Progress is saved periodically during playback.
+        *   Progress is saved when the video is paused, ends, or when the user navigates away/closes the tab.
+    *   **Resume Playback:** When a logged-in user returns to a video, playback resumes from the last saved interval.
+    *   **Progress Bar:** A thin progress bar is displayed below each video title in the playlist, indicating the percentage watched by the logged-in user.
+    *   **Completion Marking:** For logged-in users, when a video is watched to completion, it's marked as complete.
+        *   A green checkmark icon appears next to the video title in the playlist.
+        *   This completion status is persisted in Firestore.
+*   **Video Seeking (Intentional Limitation):**
+    *   The custom video player **does not** currently feature a traditional progress bar/scrubber for users to arbitrarily click and drag to different points in the video.
+    *   This is an **intentional design choice** to encourage a more linear and complete viewing experience for course content. Users navigate via "Rewind 10s," sequential play, or re-selecting videos from the playlist.
+*   **Playlist Interaction:**
+    *   The currently playing video title is highlighted in the playlist sidebar.
 
-*   **Intentional Absence of Progress Bar/Seeking in Player Controls:**
-    *   The custom video player **deliberately does not include a visual progress bar or scrubber in its main control panel.**
-    *   **Consequence & Design Choice:** This design encourages users to engage with the content linearly and discourages arbitrary skipping within the player itself. Video navigation is primarily through sequential playback, using the "Rewind 10s" button, or re-selecting a video from the playlist (which typically starts it from the last saved point for logged-in users, or from the beginning for others).
-    *   **Rationale:** The underlying HTML5 video element supports seeking (`videoRef.current.currentTime`), which is utilized by the rewind button and the progress resumption feature. However, a user-facing draggable progress bar in the main controls is intentionally omitted to promote a more focused and complete viewing experience for each lecture. Progress is visually indicated in the playlist sidebar for logged-in users.
+### 3.4. Personalized Recommendations (AI-Powered)
+*   Dedicated "Recommendations" page.
+*   Users input their interests and optionally, their learning history.
+*   A Genkit flow (`personalizedCourseRecommendationsFlow`) processes this input to generate a list of tailored course suggestions.
+*   Recommendations are displayed to the user.
 
-### Personalized Recommendations (AI-Powered)
-*   A dedicated page where users can input their interests and learning history.
-*   Genkit AI flow processes this input to provide personalized course recommendations.
+## 4. Routing (App Router)
 
-### User Profile Management
-*   Authenticated users can navigate to a page to change their password.
+*   `/` (Home): Redirects to `/login` (if not authenticated) or `/courses` (if authenticated).
+*   `/login`: Login page.
+*   `/signup`: Signup page.
+*   `/forgot-password`: Forgot password page.
+*   `/courses`: Main course dashboard.
+    *   Displays all available courses.
+    *   Supports search functionality via query parameter (e.g., `/courses?search=python`).
+*   `/courses/[courseId]`: Course detail page.
+*   `/recommendations`: Personalized course recommendations page.
+*   `/profile/change-password`: Page for logged-in users to change their password.
 
-## Responsiveness
-*   The application is designed to be responsive, adapting to various screen sizes using Tailwind CSS and responsive component design.
+## 5. Styling & UI
+*   **Theme:** Light theme with a beige background. Primary color is indigo, accent is purple. Dark mode variables are present but light mode is the focus.
+*   **Layout:**
+    *   Main application layout includes a Navbar and Footer.
+    *   Authentication pages use a distinct `AuthLayout` with a background image.
+*   **Responsiveness:** The application aims to be responsive using Tailwind CSS utility classes and component-specific adjustments.
 
-## Navigation
-*   Navbar with a link to "MyCourses", a search bar.
-*   User avatar dropdown with options for "Change Password" and "Log out."
-*   Mobile-responsive navigation with a sheet menu.
+## 6. Data Management
+*   **Course Data:** Stored in Firestore collection named `courses`. Includes details like title, description, category, image URL, duration, level, and an array of `videoLectures` (each with id, title, videoUrl).
+*   **User Authentication Data:** Managed by Firebase Authentication.
+*   **User Video Progress & Completion:** Stored in Firestore collection `userVideoProgress`. Each document (keyed by `userId`) contains a `videoStates` map where each `videoId` maps to `{ currentTime, duration, completed }`.
+*   **Static Assets:** Images like logos are stored in the `public/assets` directory.
 
-## Styling
-*   Customizable theme using CSS variables in `src/app/globals.css`.
-*   Utilizes ShadCN UI components for a consistent and modern look and feel.
+## 7. Error Handling
+*   Client-side forms include validation messages.
+*   Toasts are used for success and error notifications for operations like login, signup, password change, and recommendation generation.
+*   Alert components are used for more prominent error displays on pages (e.g., course loading errors).
+
+## 8. Future Considerations / Potential Enhancements
+*   Admin panel for course management.
+*   More detailed user profiles.
+*   Quizzes or assessments within courses.
+*   User reviews and ratings for courses.
+*   Directly upload and host video content via Cloud Storage for Firebase.
+*   Advanced search and filtering for courses.
