@@ -345,40 +345,38 @@ const CourseDetailPage = () => {
           <h3 className="text-lg font-semibold mb-4 text-foreground border-t pt-4">Video Lectures</h3>
           {course.videoLectures && course.videoLectures.length > 0 ? (
             <>
-              <ul className="space-y-2">
-                {course.videoLectures.map((video) => {
-                  const videoState = videoStates.get(video.id);
-                  const progressPercent = (videoState && videoState.duration && videoState.currentTime) ? (videoState.currentTime / videoState.duration) * 100 : 0;
-                  const isCompleted = videoState?.completed || progressPercent >= 99.9;
+              {course.videoLectures.slice(0, 1).map((video) => {
+                const videoState = videoStates.get(video.id);
+                const progressPercent = (videoState && videoState.duration && videoState.currentTime) ? (videoState.currentTime / videoState.duration) * 100 : 0;
+                const isCompleted = videoState?.completed || progressPercent >= 99.9;
 
-                  return (
-                    <li key={video.id}>
-                      <button
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
-                        onClick={() => handleVideoSelect(video)}
-                      >
-                        <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <div className="flex-grow">
-                          <span className="block text-left">{video.title}</span>
-                          <Progress value={progressPercent} className="h-1 w-full mt-1 [&>div]:bg-primary" />
-                        </div>
-                        <span className="flex-shrink-0 ml-2">
-                          {isCompleted ? (
-                            <CheckCircle size={16} className="text-green-500" />
-                          ) : (
-                            <Circle size={16} className="text-gray-400" />
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+                return (
+                  <div key={video.id}>
+                    <button
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
+                      onClick={() => handleVideoSelect(video)}
+                    >
+                      <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <div className="flex-grow">
+                        <span className="block text-left">{video.title}</span>
+                        <Progress value={progressPercent} className="h-1 w-full mt-1 [&>div]:bg-primary" />
+                      </div>
+                      <span className="flex-shrink-0 ml-2">
+                        {isCompleted ? (
+                          <CheckCircle size={16} className="text-green-500" />
+                        ) : (
+                          <Circle size={16} className="text-gray-400" />
+                        )}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })}
               <div className="mt-6 mb-2">
                 <p className="text-xs text-muted-foreground mb-1 text-center">Overall Course Progress: {overallCourseProgressPercent.toFixed(0)}%</p>
                 <div className="h-[4px] w-full bg-muted rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-green-500 rounded-full transition-all duration-300 ease-in-out"
+                        className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out"
                         style={{ width: `${overallCourseProgressPercent}%` }}
                     />
                 </div>

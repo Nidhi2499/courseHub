@@ -47,6 +47,9 @@ CourseHub is a personalized online learning platform designed to offer users a c
     *   Users can cancel the countdown or play the next video immediately.
 *   **Video Progress & Completion Tracking (Login Required):**
     *   **Progress Saving:** For logged-in users, video playback progress (current time, duration) is automatically saved to Firestore.
+        *   **Fetching Progress on Login:** When a user logs in, their last watched timestamp for a particular video and their progress in a particular course are fetched from the database. This data is stored in the `userVideoProgress` collection in Firestore.
+        *   The structure for this data is detailed in the `UserVideoState` interface within the `UserProgressDocument` type (see `src/services/userProgressService.ts` and data management section), which includes fields like `currentTime`, `duration`, and `completed` for each video.
+        *   Fetching this information on login is crucial for enabling features like resuming video playback from where the user left off, displaying individual video progress bars, and calculating overall course progress.
         *   Progress is saved periodically during playback.
         *   Progress is saved when the video is paused, ends, or when the user navigates away/closes the tab.
     *   **Resume Playback:** When a logged-in user returns to a video, playback resumes from the last saved interval.
