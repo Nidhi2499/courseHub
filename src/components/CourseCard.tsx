@@ -7,16 +7,20 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Course } from "@/types/course";
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
 
 interface CourseCardProps {
   course: Course;
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const [currentImageSrc, setCurrentImageSrc] = useState(course.imageUrl);
+  const [currentImageSrc, setCurrentImageSrc] = useState(course.imageUrl || `https://placehold.co/600x400.png?text=Image+Unavailable`);
 
   useEffect(() => {
-    setCurrentImageSrc(course.imageUrl);
+    // Ensure fallback if course.imageUrl is falsy
+    setCurrentImageSrc(course.imageUrl || `https://placehold.co/600x400.png?text=Image+Unavailable`);
   }, [course.imageUrl]);
 
   const handleImageError = () => {
@@ -29,13 +33,13 @@ export default function CourseCard({ course }: CourseCardProps) {
       <a className="group block h-full w-full transition-all hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg group-hover:scale-105">
         <Card className="flex h-full w-full flex-col overflow-hidden">
           <CardHeader className="p-0">
-            <div className="relative h-48 w-full group">
+            <div className="relative h-48 w-full">
               <Image
                 src={currentImageSrc}
-                alt={course.title}
+                alt={course.title || "Course Image"} // Fallback for alt text
                 fill={true}
                 className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-                data-ai-hint={course.dataAiHint}
+                data-ai-hint={course.dataAiHint || "course"} // Fallback for data-ai-hint
                 onError={handleImageError}
                 unoptimized={currentImageSrc.startsWith('https://placehold.co') && currentImageSrc.includes('?text=')}
               />

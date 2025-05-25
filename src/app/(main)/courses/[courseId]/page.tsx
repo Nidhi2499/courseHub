@@ -79,7 +79,6 @@ const CourseDetailPage = () => {
       };
       const handleLoadedMetadata = () => {
         if(videoElement) setIsMuted(videoElement.muted);
-         // Ensure video is paused after metadata is loaded
         videoElement.pause();
       };
 
@@ -134,7 +133,10 @@ const CourseDetailPage = () => {
   };
 
   const handleVideoSelect = (video: VideoLecture) => {
-    setSelectedVideoUrl(video.videoUrl);
+    setSelectedVideoUrl(video.videoUrl); 
+    if (videoRef.current) {
+      videoRef.current.src = video.videoUrl;
+    }
     // The useEffect hook triggered by selectedVideoUrl will handle loading and pausing.
   };
 
@@ -163,11 +165,11 @@ const CourseDetailPage = () => {
   };
 
    const togglePlayPause = () => {
-    if (videoRef.current) {
+     if (videoRef.current) {
        if (videoRef.current.paused || videoRef.current.ended) {
          videoRef.current.play().catch(e => console.warn("Play action failed:", e));
        } else {
-         videoRef.current.pause();
+        videoRef.current.pause();
        }
      }
    };
@@ -244,7 +246,7 @@ const CourseDetailPage = () => {
                 <li key={video.id}>
                   <button
                     className= {`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedVideoUrl === video.videoUrl?'bg-primary/10 text-primary font-semibold hover:bg-primary/20' : 'hover:bg-muted text-foreground/80'}`}
-                    onClick={() => handleVideoSelect(video)}
+                    onClick={() => { handleVideoSelect(video); if (videoRef.current) videoRef.current.play(); }}
                   >
                     <MonitorPlay size={16} className={`${selectedVideoUrl === video.videoUrl ? 'text-primary' : 'text-muted-foreground'}`} />
                     <span className="flex-grow text-left">{video.title}</span>
@@ -277,7 +279,6 @@ const CourseDetailPage = () => {
                 onLoadedMetadata={() => {
                   if(videoRef.current) setIsMuted(videoRef.current.muted);
                    // Ensure video is paused after metadata is loaded
-                   videoRef.current?.pause();
                 }}
                  onPlay={() => { setIsPlaying(true); clearCountdown(); }} // Clear countdown if user plays
                  onPause={() => setIsPlaying(false)}
@@ -310,9 +311,6 @@ const CourseDetailPage = () => {
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleSeek(-10)} title="Rewind 10s">
                     <Rewind size={20} />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleSeek(10)} title="Forward 10s">
-                    <FastForward size={20} />
                   </Button>
                 </div>\n
                 <div className="flex items-center gap-2">

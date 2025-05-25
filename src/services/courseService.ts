@@ -9,6 +9,7 @@ const COURSES_COLLECTION = 'courses';
 
 export async function seedCoursesIfEmpty(): Promise<void> {
   try {
+    console.log('Attempting to seed courses if collection is empty...');
     const coursesCollectionRef = collection(db, COURSES_COLLECTION);
     const querySnapshot = await getDocs(coursesCollectionRef);
     if (querySnapshot.empty) {
